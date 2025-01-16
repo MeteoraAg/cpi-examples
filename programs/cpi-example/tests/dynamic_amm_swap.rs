@@ -11,7 +11,7 @@ use solana_sdk::{
 const USDC_USDT_POOL: Pubkey = solana_sdk::pubkey!("32D4zRxNc1EssbJieVHfPhZM3rH6CzfUPrWUuWxD9prG");
 
 #[tokio::test]
-async fn dlmm_swap() {
+async fn test_dynamic_amm_swap() {
     let mock_user = Keypair::new();
 
     let mut test = ProgramTest::new(
@@ -19,6 +19,7 @@ async fn dlmm_swap() {
         cpi_example::id(),
         processor!(cpi_example::entry),
     );
+    test.prefer_bpf(true);
 
     test.add_program("dynamic_amm", dynamic_amm::ID, None);
     test.add_program("dynamic_vault", dynamic_vault::ID, None);

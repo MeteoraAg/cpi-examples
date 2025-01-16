@@ -14,7 +14,7 @@ use solana_sdk::{
 const USDC_USDT_POOL: Pubkey = solana_sdk::pubkey!("ARwi1S4DaiTG5DX7S4M4ZsrXqpMD1MrTmbu9ue2tpmEq");
 
 #[tokio::test]
-async fn dlmm_swap() {
+async fn test_dlmm_swap() {
     let mock_user = Keypair::new();
 
     let mut test = ProgramTest::new(
@@ -23,6 +23,7 @@ async fn dlmm_swap() {
         processor!(cpi_example::entry),
     );
 
+    test.prefer_bpf(true);
     test.add_program("dlmm", dlmm::ID, None);
 
     let SetupContext {
