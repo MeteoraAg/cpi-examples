@@ -49,7 +49,7 @@ async fn dlmm_swap() {
         b_vault_lp: pool_state.b_vault_lp,
         a_vault_lp_mint: a_vault_state.lp_mint,
         b_vault_lp_mint: b_vault_state.lp_mint,
-        admin_token_fee: pool_state.admin_token_a_fee,
+        protocol_token_fee: pool_state.protocol_token_a_fee,
         user_source_token: user_token_a,
         user_destination_token: user_token_b,
         user: mock_user.pubkey(),

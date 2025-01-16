@@ -1054,6 +1054,7 @@ dependencies = [
  "solana-client",
  "solana-program-test",
  "solana-sdk",
+ "stake_for_fee_interface",
 ]
 
 [[package]]
@@ -1335,17 +1336,18 @@ dependencies = [
 
 [[package]]
 name = "dynamic-amm"
-version = "0.1.0"
-source = "git+https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk?rev=7be5237e9d688f83d40df71278fdbd6ec2d42979#7be5237e9d688f83d40df71278fdbd6ec2d42979"
+version = "0.6.1"
+source = "git+https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk?rev=ae46f2a44edbd8231467effd530c1eeecc231a1b#ae46f2a44edbd8231467effd530c1eeecc231a1b"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
+ "solana-program",
 ]
 
 [[package]]
 name = "dynamic-vault"
 version = "0.1.0"
-source = "git+https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk?rev=7be5237e9d688f83d40df71278fdbd6ec2d42979#7be5237e9d688f83d40df71278fdbd6ec2d42979"
+source = "git+https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk?rev=ae46f2a44edbd8231467effd530c1eeecc231a1b#ae46f2a44edbd8231467effd530c1eeecc231a1b"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -2074,8 +2076,8 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "lb_clmm"
-version = "0.6.1"
-source = "git+https://github.com/MeteoraAg/dlmm-sdk/?rev=fb350c54ab1d023dc0819d1c4d89e882fabdbf75#fb350c54ab1d023dc0819d1c4d89e882fabdbf75"
+version = "0.8.2"
+source = "git+https://github.com/MeteoraAg/dlmm-sdk/?rev=c0be81cd9983ace2bc1b9fd15319e42a09561b78#c0be81cd9983ace2bc1b9fd15319e42a09561b78"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -4862,6 +4864,18 @@ dependencies = [
  "spl-discriminator",
  "spl-pod",
  "spl-program-error",
+]
+
+[[package]]
+name = "stake_for_fee_interface"
+version = "0.1.0"
+source = "git+https://github.com/meteoraAg/stake-for-fee-sdk?rev=796ed09b500a92c36927915d22cce28ef78b2a8d#796ed09b500a92c36927915d22cce28ef78b2a8d"
+dependencies = [
+ "borsh 0.10.3",
+ "num-derive 0.3.3",
+ "num-traits",
+ "solana-program",
+ "thiserror",
 ]
 
 [[package]]

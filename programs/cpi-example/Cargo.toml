@@ -17,20 +17,21 @@ default = []
 
 [dependencies]
 anchor-spl = "0.28.0"
-anchor-lang = "0.28.0"
-dlmm = { git = "https://github.com/MeteoraAg/dlmm-sdk/", package = "lb_clmm", rev = "fb350c54ab1d023dc0819d1c4d89e882fabdbf75", features = [
+anchor-lang = { version = "0.28.0", features = ["init-if-needed"] }
+dlmm = { git = "https://github.com/MeteoraAg/dlmm-sdk/", package = "lb_clmm", rev = "c0be81cd9983ace2bc1b9fd15319e42a09561b78", features = [
     "cpi",
 ] }
 dynamic-amm = { git = "https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk", features = [
     "cpi",
-], rev = "7be5237e9d688f83d40df71278fdbd6ec2d42979" }
+], rev = "ae46f2a44edbd8231467effd530c1eeecc231a1b" }
+m3m3 = { git = "https://github.com/meteoraAg/stake-for-fee-sdk", package = "stake_for_fee_interface", rev = "796ed09b500a92c36927915d22cce28ef78b2a8d" }
 
 [dev-dependencies]
 solana-program-test = "1.16.0"
 solana-sdk = "1.16.0"
 dynamic-vault = { git = "https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk", features = [
     "cpi",
-], rev = "7be5237e9d688f83d40df71278fdbd6ec2d42979" }
+], rev = "ae46f2a44edbd8231467effd530c1eeecc231a1b" }
 bytemuck = { version = "1.13.1", features = ["derive", "min_const_generics"] }
 assert_matches = "1.5.0"
 solana-client = "1.16.0"

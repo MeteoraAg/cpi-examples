@@ -42,8 +42,8 @@ pub struct DynamicAmmSwap<'info> {
     pub b_vault_lp: UncheckedAccount<'info>,
 
     #[account(mut)]
-    /// CHECK: Admin fee token account. Used to receive trading fee. It's mint field must matched with user_source_token mint field.
-    pub admin_token_fee: UncheckedAccount<'info>,
+    /// CHECK: Protocol fee token account. Used to receive trading fee. It's mint field must matched with user_source_token mint field.
+    pub protocol_token_fee: UncheckedAccount<'info>,
 
     /// CHECK: User account. Must be owner of user_source_token.
     pub user: Signer<'info>,
@@ -86,7 +86,7 @@ pub fn handle_dynamic_amm_swap(
         b_vault_lp_mint: ctx.accounts.b_vault_lp_mint.to_account_info(),
         a_vault_lp: ctx.accounts.a_vault_lp.to_account_info(),
         b_vault_lp: ctx.accounts.b_vault_lp.to_account_info(),
-        admin_token_fee: ctx.accounts.admin_token_fee.to_account_info(),
+        protocol_token_fee: ctx.accounts.protocol_token_fee.to_account_info(),
         user: ctx.accounts.user.to_account_info(),
         vault_program: ctx.accounts.vault_program.to_account_info(),
         token_program: ctx.accounts.token_program.to_account_info(),

@@ -54,8 +54,8 @@ pub async fn setup_pool_from_cluster(
     }
 
     let token_keys = vec![
-        pool_state.admin_token_a_fee,
-        pool_state.admin_token_b_fee,
+        pool_state.protocol_token_a_fee,
+        pool_state.protocol_token_b_fee,
         pool_state.a_vault_lp,
         pool_state.b_vault_lp,
         a_vault_state.token_vault,
