@@ -2,7 +2,7 @@ use anchor_lang::{solana_program::pubkey::Pubkey, InstructionData, ToAccountMeta
 mod helpers;
 use dlmm::state::bin::BinArray;
 use dlmm::utils::pda::derive_bin_array_pda;
-use helpers::dlmm_utils::{setup_pool_from_cluster, SetupContext};
+use helpers::dlmm_utils::{setup_pool_from_cluster, PoolSetupContext};
 use helpers::process_and_assert_ok;
 use solana_program_test::*;
 use solana_sdk::instruction::AccountMeta;
@@ -26,7 +26,7 @@ async fn test_dlmm_swap() {
     test.prefer_bpf(true);
     test.add_program("dlmm", dlmm::ID, None);
 
-    let SetupContext {
+    let PoolSetupContext {
         pool_state,
         user_token_x,
         user_token_y,

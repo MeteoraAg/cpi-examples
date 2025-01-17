@@ -1,6 +1,6 @@
 use anchor_lang::{solana_program::pubkey::Pubkey, InstructionData, ToAccountMetas};
 mod helpers;
-use helpers::dynamic_amm_utils::{setup_pool_from_cluster, SetupContext};
+use helpers::dynamic_amm_utils::{setup_pool_from_cluster, PoolSetupContext};
 use helpers::process_and_assert_ok;
 use solana_program_test::*;
 use solana_sdk::{
@@ -24,7 +24,7 @@ async fn test_dynamic_amm_swap() {
     test.add_program("dynamic_amm", dynamic_amm::ID, None);
     test.add_program("dynamic_vault", dynamic_vault::ID, None);
 
-    let SetupContext {
+    let PoolSetupContext {
         pool_state,
         a_vault_state,
         b_vault_state,

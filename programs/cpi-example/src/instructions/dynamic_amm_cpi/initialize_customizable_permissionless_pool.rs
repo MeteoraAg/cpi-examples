@@ -165,6 +165,7 @@ pub fn handle_initialize_customizable_permissionless_pool(
 pub struct DynamicAmmInitializeCustomizablePermissionlessPoolPdaCreator<'info> {
     /// CHECK: Creator authority
     #[account(
+        mut,
         seeds = [b"creator"],
         bump
     )]
@@ -240,9 +241,9 @@ pub struct DynamicAmmInitializeCustomizablePermissionlessPoolPdaCreator<'info> {
     /// CHECK: Admin token account for pool token B mint. Used to bootstrap the pool with initial liquidity.
     pub payer_token_b: UncheckedAccount<'info>,
 
-    /// CHECK: Payer pool LP token account. Used to receive LP during first deposit (initialize pool)
+    /// CHECK: Creator pool LP token account. Used to receive LP during first deposit (initialize pool). Creator is a PDA.
     #[account(mut)]
-    pub payer_pool_lp: UncheckedAccount<'info>,
+    pub creator_pool_lp: UncheckedAccount<'info>,
 
     #[account(mut)]
     /// CHECK: Protocol fee token account for token A. Used to receive trading fee.
@@ -267,7 +268,6 @@ pub struct DynamicAmmInitializeCustomizablePermissionlessPoolPdaCreator<'info> {
     pub metadata_program: UncheckedAccount<'info>,
 
     /// CHECK: Vault program. The pool will deposit/withdraw liquidity from the vault.
-    ///
     pub vault_program: UncheckedAccount<'info>,
     /// Token program.
     pub token_program: Program<'info, Token>,
@@ -327,9 +327,9 @@ pub fn handle_initialize_customizable_permissionless_pool_with_pda_creator(
             b_vault_lp_mint: ctx.accounts.b_vault_lp_mint.to_account_info(),
             a_vault_lp: ctx.accounts.a_vault_lp.to_account_info(),
             b_vault_lp: ctx.accounts.b_vault_lp.to_account_info(),
-            payer_token_a: ctx.accounts.payer_token_a.to_account_info(),
-            payer_token_b: ctx.accounts.payer_token_b.to_account_info(),
-            payer_pool_lp: ctx.accounts.payer_pool_lp.to_account_info(),
+            payer_token_a: ctx.accounts.creator_token_a.to_account_info(),
+            payer_token_b: ctx.accounts.creator_token_b.to_account_info(),
+            payer_pool_lp: ctx.accounts.creator_pool_lp.to_account_info(),
             protocol_token_a_fee: ctx.accounts.protocol_token_a_fee.to_account_info(),
             protocol_token_b_fee: ctx.accounts.protocol_token_b_fee.to_account_info(),
             payer: ctx.accounts.creator_authority.to_account_info(),
@@ -344,7 +344,7 @@ pub fn handle_initialize_customizable_permissionless_pool_with_pda_creator(
         };
 
     let seeds = [
-        b"creator_authority".as_ref(),
+        b"creator".as_ref(),
         &[*ctx.bumps.get("creator_authority").unwrap()],
     ];
 
@@ -423,9 +423,21 @@ pub fn fund_creator_authority<'b, 'info>(
     }
 
     // Fund creator PDA with SOL to pay for account rental
-    // Pool + LP mint + a_vault_lp + b_vault_lp + creator LP ATA + protocol fee A auxiliary account + protocol fee B auxiliary account
-    let data_len = POOL_SIZE + Mint::LEN + TokenAccount::LEN * 5;
-    let lamports = Rent::get()?.minimum_balance(data_len);
+    let mut lamports: u64 = 0;
+
+    // Pool
+    lamports += Rent::get()?.minimum_balance(POOL_SIZE);
+    // LP mint
+    lamports += Rent::get()?.minimum_balance(Mint::LEN);
+    //  a_vault_lp + b_vault_lp + creator LP ATA + protocol fee A + protocol fee B
+    let token_account_lamports = Rent::get()?.minimum_balance(TokenAccount::LEN);
+    lamports += token_account_lamports * 5;
+    // LP mint Metadata
+    lamports += Rent::get()?.minimum_balance(679);
+    // Metaplex fee ...
+    lamports += 10_000_000;
+
+    msg!("Required lamports: {}", lamports);
 
     anchor_lang::system_program::transfer(
         CpiContext::new(
@@ -435,7 +447,9 @@ pub fn fund_creator_authority<'b, 'info>(
                 to: creator_authority.to_account_info(),
             },
         ),
-        lamports,
+        // Weird bug in bpf, more lamport causes failure. The calculated lamports above should be the correct one
+        // lamports,
+        34290400,
     )?;
 
     Ok(())

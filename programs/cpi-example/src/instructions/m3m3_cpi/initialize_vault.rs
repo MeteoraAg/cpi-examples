@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_spl::token::TokenAccount;
 use m3m3::{InitializeVaultIxArgs, InitializeVaultParams};
 
 #[derive(Accounts)]
@@ -19,8 +20,13 @@ pub struct InitializeM3m3Vault<'info> {
     pub source_lp_tokens: UncheckedAccount<'info>,
 
     /// CHECK: Escrow vault
-    #[account(mut)]
-    pub escrow_vault: UncheckedAccount<'info>,
+    #[account(
+        init_if_needed,
+        associated_token::mint = lp_mint,
+        associated_token::authority = lock_escrow,
+        payer = payer
+    )]
+    pub escrow_vault: Box<Account<'info, TokenAccount>>,
 
     /// Wallet that hold LP tokens and wish to lock to m3m3 vault
     #[account(mut)]

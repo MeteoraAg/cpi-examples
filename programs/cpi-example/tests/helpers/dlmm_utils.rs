@@ -10,7 +10,7 @@ use solana_sdk::account::Account;
 use super::utils::add_packable_account;
 use super::RPC;
 
-pub struct SetupContext {
+pub struct PoolSetupContext {
     pub pool_state: LbPair,
     pub user_token_x: Pubkey,
     pub user_token_y: Pubkey,
@@ -20,7 +20,7 @@ pub async fn setup_pool_from_cluster(
     test: &mut ProgramTest,
     pool: Pubkey,
     mock_user: Pubkey,
-) -> SetupContext {
+) -> PoolSetupContext {
     let rpc_client = RpcClient::new(RPC.to_owned());
 
     let pool_account = rpc_client.get_account(&pool).await.unwrap();
@@ -83,7 +83,7 @@ pub async fn setup_pool_from_cluster(
         add_packable_account(test, state, anchor_spl::token::ID, *ata_key);
     }
 
-    SetupContext {
+    PoolSetupContext {
         pool_state,
         user_token_x: token_ata_key[0],
         user_token_y: token_ata_key[1],

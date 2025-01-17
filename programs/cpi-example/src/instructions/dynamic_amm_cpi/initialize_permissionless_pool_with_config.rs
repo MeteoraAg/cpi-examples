@@ -247,9 +247,9 @@ pub struct DynamicAmmInitializePermissionlessPoolWithConfigPoolPdaCreator<'info>
     /// CHECK: Admin token account for pool token B mint. Used to bootstrap the pool with initial liquidity.
     pub payer_token_b: UncheckedAccount<'info>,
 
-    /// CHECK: Payer pool LP token account. Used to receive LP during first deposit (initialize pool)
+    /// CHECK: Creator pool LP token account. Used to receive LP during first deposit (initialize pool). Creator is a PDA.
     #[account(mut)]
-    pub payer_pool_lp: UncheckedAccount<'info>,
+    pub creator_pool_lp: UncheckedAccount<'info>,
 
     #[account(mut)]
     /// CHECK: Protocol fee token account for token A. Used to receive trading fee.
@@ -336,7 +336,7 @@ pub fn handle_initialize_customizable_permissionless_pool_with_pda_creator(
             b_vault_lp: ctx.accounts.b_vault_lp.to_account_info(),
             payer_token_a: ctx.accounts.payer_token_a.to_account_info(),
             payer_token_b: ctx.accounts.payer_token_b.to_account_info(),
-            payer_pool_lp: ctx.accounts.payer_pool_lp.to_account_info(),
+            payer_pool_lp: ctx.accounts.creator_pool_lp.to_account_info(),
             protocol_token_a_fee: ctx.accounts.protocol_token_a_fee.to_account_info(),
             protocol_token_b_fee: ctx.accounts.protocol_token_b_fee.to_account_info(),
             payer: ctx.accounts.payer.to_account_info(),
@@ -352,7 +352,7 @@ pub fn handle_initialize_customizable_permissionless_pool_with_pda_creator(
         };
 
     let seeds = [
-        b"creator_authority".as_ref(),
+        b"creator".as_ref(),
         &[*ctx.bumps.get("creator_authority").unwrap()],
     ];
 

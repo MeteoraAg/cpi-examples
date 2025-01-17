@@ -34,6 +34,7 @@ pub mod cpi_example {
         )
     }
 
+    // NOTE: Creator authority PDA will be holding the LP
     pub fn initialize_dynamic_amm_customizable_permissionless_pool_pda_creator(
         ctx: Context<DynamicAmmInitializeCustomizablePermissionlessPoolPdaCreator>,
         token_a_amount: u64,
@@ -59,6 +60,7 @@ pub mod cpi_example {
         )
     }
 
+    // NOTE: Creator authority PDA will be holding the LP
     pub fn initialize_dynamic_amm_permission_pool_with_config_pda_creator(
         ctx: Context<DynamicAmmInitializePermissionlessPoolWithConfigPoolPdaCreator>,
         token_a_amount: u64,
