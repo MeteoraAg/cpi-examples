@@ -2,6 +2,8 @@
 
 The repository containing examples for CPI (Cross-Program Invocation) to swap at [DLMM](https://github.com/meteoraAg/dlmm-sdk) and [Dynamic AMM](https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk) programs.
 
+Disclaimer: This repository only serves as examples and is not intended for production use.
+
 ## Dependencies
 
 - anchor 0.28.0
@@ -10,9 +12,14 @@ The repository containing examples for CPI (Cross-Program Invocation) to swap at
 
 ## Contents
 
-- [CPI to DLMM swap example](programs/cpi-example/src/instructions/dlmm_swap.rs)
-- [CPI to Dynamic AMM swap example](programs/cpi-example/src/instructions/dynamic_amm.rs)
-- [DLMM CPI test](programs/cpi-example/tests/dlmm_swap.rs)
-- [Dynamic AMM CPI test](programs/cpi-example/tests/dynamic_dlmm_swap.rs)
+- [CPI to DLMM swap example](programs/cpi-example/src/instructions/dlmm_cpi/swap.rs)
+- [CPI to Dynamic AMM swap example](programs/cpi-example/src/instructions/dynamic_amm_cpi/swap.rs)
+
+- [CPI to Dynamic AMM initialize pool example](programs/cpi-example/src/instructions/dynamic_amm_cpi/initialize_customizable_permissionless_pool.rs)
+- [CPI to Dynamic AMM initialize pool with config example](programs/cpi-example/src/instructions/dynamic_amm_cpi/initialize_permissionless_pool_with_config.rs)
+
+- [CPI to M3m3 initialize vault example](programs/cpi-example/src/instructions/m3m3_cpi/initialize_vault.rs)
+
+- [Tests](programs/cpi-example/tests/)
 
 For more details, please check the respective [DLMM](https://github.com/meteoraAg/dlmm-sdk) and [Dynamic AMM](https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk) repo.

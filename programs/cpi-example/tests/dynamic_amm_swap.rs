@@ -1,6 +1,6 @@
 use anchor_lang::{solana_program::pubkey::Pubkey, InstructionData, ToAccountMetas};
 mod helpers;
-use helpers::dynamic_amm_utils::{setup_pool_from_cluster, SetupContext};
+use helpers::dynamic_amm_utils::{setup_pool_from_cluster, PoolSetupContext};
 use helpers::process_and_assert_ok;
 use solana_program_test::*;
 use solana_sdk::{
@@ -11,7 +11,7 @@ use solana_sdk::{
 const USDC_USDT_POOL: Pubkey = solana_sdk::pubkey!("32D4zRxNc1EssbJieVHfPhZM3rH6CzfUPrWUuWxD9prG");
 
 #[tokio::test]
-async fn dlmm_swap() {
+async fn test_dynamic_amm_swap() {
     let mock_user = Keypair::new();
 
     let mut test = ProgramTest::new(
@@ -19,11 +19,12 @@ async fn dlmm_swap() {
         cpi_example::id(),
         processor!(cpi_example::entry),
     );
+    test.prefer_bpf(true);
 
     test.add_program("dynamic_amm", dynamic_amm::ID, None);
     test.add_program("dynamic_vault", dynamic_vault::ID, None);
 
-    let SetupContext {
+    let PoolSetupContext {
         pool_state,
         a_vault_state,
         b_vault_state,
@@ -49,7 +50,7 @@ async fn dlmm_swap() {
         b_vault_lp: pool_state.b_vault_lp,
         a_vault_lp_mint: a_vault_state.lp_mint,
         b_vault_lp_mint: b_vault_state.lp_mint,
-        admin_token_fee: pool_state.admin_token_a_fee,
+        protocol_token_fee: pool_state.protocol_token_a_fee,
         user_source_token: user_token_a,
         user_destination_token: user_token_b,
         user: mock_user.pubkey(),

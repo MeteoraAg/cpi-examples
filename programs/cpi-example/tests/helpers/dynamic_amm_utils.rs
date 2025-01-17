@@ -10,7 +10,168 @@ use solana_sdk::{account::Account, pubkey::Pubkey};
 
 use super::{utils::add_packable_account, RPC};
 
-pub struct SetupContext {
+const VAULT_BASE_KEY: Pubkey = solana_sdk::pubkey!("HWzXGcGHy4tcpYfaRDCyLNzXqBTv3E6BttpCH2vJxArv");
+pub const METAPLEX_PROGRAM_ID: Pubkey =
+    solana_sdk::pubkey!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
+
+/// get first key, this is same as max(key1, key2)
+pub fn get_first_key(key1: Pubkey, key2: Pubkey) -> Pubkey {
+    if key1 > key2 {
+        return key1;
+    }
+    key2
+}
+/// get second key, this is same as min(key1, key2)
+pub fn get_second_key(key1: Pubkey, key2: Pubkey) -> Pubkey {
+    if key1 > key2 {
+        return key2;
+    }
+    key1
+}
+
+pub fn derive_protocol_fee_key(mint_key: Pubkey, pool_key: Pubkey) -> Pubkey {
+    Pubkey::find_program_address(
+        &[b"fee", mint_key.as_ref(), pool_key.as_ref()],
+        &dynamic_amm::ID,
+    )
+    .0
+}
+
+pub fn derive_metadata_key(lp_mint: Pubkey) -> Pubkey {
+    Pubkey::find_program_address(
+        &[b"metadata", METAPLEX_PROGRAM_ID.as_ref(), lp_mint.as_ref()],
+        &METAPLEX_PROGRAM_ID,
+    )
+    .0
+}
+
+pub fn derive_vault_lp_key(vault_key: Pubkey, pool_key: Pubkey) -> Pubkey {
+    Pubkey::find_program_address(&[vault_key.as_ref(), pool_key.as_ref()], &dynamic_amm::ID).0
+}
+
+pub fn derive_lp_mint(pool_key: Pubkey) -> Pubkey {
+    Pubkey::find_program_address(&[b"lp_mint", pool_key.as_ref()], &dynamic_amm::ID).0
+}
+
+pub fn derive_lock_escrow(pool_key: Pubkey, owner_key: Pubkey) -> Pubkey {
+    Pubkey::find_program_address(
+        &[b"lock_escrow", pool_key.as_ref(), owner_key.as_ref()],
+        &dynamic_amm::ID,
+    )
+    .0
+}
+
+pub fn derive_customizable_permissionless_constant_product_pool_key(
+    mint_a: Pubkey,
+    mint_b: Pubkey,
+) -> Pubkey {
+    Pubkey::find_program_address(
+        &[
+            b"pool",
+            get_first_key(mint_a, mint_b).as_ref(),
+            get_second_key(mint_a, mint_b).as_ref(),
+        ],
+        &dynamic_amm::ID,
+    )
+    .0
+}
+
+pub fn derive_permissionless_constant_product_pool_with_config_key(
+    mint_a: Pubkey,
+    mint_b: Pubkey,
+    config: Pubkey,
+) -> Pubkey {
+    Pubkey::find_program_address(
+        &[
+            get_first_key(mint_a, mint_b).as_ref(),
+            get_second_key(mint_a, mint_b).as_ref(),
+            config.as_ref(),
+        ],
+        &dynamic_amm::ID,
+    )
+    .0
+}
+
+pub fn derive_vault_address(mint: Pubkey) -> Pubkey {
+    Pubkey::find_program_address(
+        &[b"vault", &mint.to_bytes(), &VAULT_BASE_KEY.to_bytes()],
+        &dynamic_vault::ID,
+    )
+    .0
+}
+
+pub struct VaultSetupContext {
+    pub key: Pubkey,
+    pub vault_state: Vault,
+    pub user_token_account: Pubkey,
+}
+
+pub async fn setup_pool_config_from_cluster(test: &mut ProgramTest, config: Pubkey) {
+    let rpc_client = RpcClient::new(RPC.to_owned());
+    let config_account = rpc_client.get_account(&config).await.unwrap();
+    test.add_account(config, config_account);
+}
+
+pub async fn setup_vault_from_cluster(
+    test: &mut ProgramTest,
+    mint: Pubkey,
+    mock_user: Pubkey,
+) -> VaultSetupContext {
+    let rpc_client = RpcClient::new(RPC.to_owned());
+
+    let vault_key = derive_vault_address(mint);
+
+    let vault_account = rpc_client.get_account(&vault_key).await.unwrap();
+    let vault_state = Vault::try_deserialize(&mut vault_account.data.as_ref()).unwrap();
+
+    test.add_account(vault_key, vault_account);
+
+    let mint_keys = [mint, vault_state.lp_mint];
+
+    let accounts = rpc_client.get_multiple_accounts(&mint_keys).await.unwrap();
+
+    for (key, account) in mint_keys.iter().zip(accounts) {
+        test.add_account(*key, account.unwrap());
+    }
+
+    let token_keys = vec![vault_state.token_vault];
+
+    let accounts = rpc_client.get_multiple_accounts(&token_keys).await.unwrap();
+
+    for (key, account) in token_keys.iter().zip(accounts) {
+        test.add_account(*key, account.unwrap());
+    }
+
+    test.add_account(
+        mock_user,
+        Account {
+            lamports: u32::MAX.into(),
+            data: vec![],
+            owner: solana_sdk::system_program::ID,
+            ..Default::default()
+        },
+    );
+
+    let token_ata_key = get_associated_token_address(&mock_user, &mint);
+
+    let state = anchor_spl::token::spl_token::state::Account {
+        mint,
+        owner: mock_user,
+        amount: u64::MAX / 2,
+        state: AccountState::Initialized,
+        ..Default::default()
+    };
+
+    add_packable_account(test, state, anchor_spl::token::ID, token_ata_key);
+
+    VaultSetupContext {
+        key: vault_key,
+        vault_state,
+        user_token_account: token_ata_key,
+    }
+}
+
+pub struct PoolSetupContext {
     pub pool_state: Pool,
     pub a_vault_state: Vault,
     pub b_vault_state: Vault,
@@ -22,7 +183,7 @@ pub async fn setup_pool_from_cluster(
     test: &mut ProgramTest,
     pool: Pubkey,
     mock_user: Pubkey,
-) -> SetupContext {
+) -> PoolSetupContext {
     let rpc_client = RpcClient::new(RPC.to_owned());
 
     let pool_account = rpc_client.get_account(&pool).await.unwrap();
@@ -54,8 +215,8 @@ pub async fn setup_pool_from_cluster(
     }
 
     let token_keys = vec![
-        pool_state.admin_token_a_fee,
-        pool_state.admin_token_b_fee,
+        pool_state.protocol_token_a_fee,
+        pool_state.protocol_token_b_fee,
         pool_state.a_vault_lp,
         pool_state.b_vault_lp,
         a_vault_state.token_vault,
@@ -95,7 +256,7 @@ pub async fn setup_pool_from_cluster(
         add_packable_account(test, state, anchor_spl::token::ID, *ata_key);
     }
 
-    SetupContext {
+    PoolSetupContext {
         pool_state,
         a_vault_state,
         b_vault_state,
