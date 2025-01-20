@@ -106,6 +106,7 @@ pub mod cpi_example {
         instructions::dynamic_amm_cpi::lock_liquidity::handle_lock_liquidity(ctx, allocations)
     }
 
+    // NOTE: Creator authority PDA lock LP token hold to self + other user
     pub fn dynamic_amm_lock_liquidity_pda_creator(
         ctx: Context<DynamicAmmLockLiquidityPdaCreator>,
         allocations: [u16; 2],
@@ -114,5 +115,16 @@ pub mod cpi_example {
             ctx,
             allocations,
         )
+    }
+
+    pub fn dynamic_amm_claim_fee(ctx: Context<DynamicAmmClaimFee>) -> Result<()> {
+        instructions::dynamic_amm_cpi::claim_fee::handle_claim_fee(ctx)
+    }
+
+    // NOTE: Creator authority PDA claim fee. LP token must lock to creator authority PDA.
+    pub fn dynamic_amm_claim_fee_pda_creator(
+        ctx: Context<DynamicAmmClaimFeePdaCreator>,
+    ) -> Result<()> {
+        instructions::dynamic_amm_cpi::claim_fee::handle_claim_fee_pda_creator(ctx)
     }
 }

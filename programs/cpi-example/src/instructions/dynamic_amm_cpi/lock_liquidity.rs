@@ -363,14 +363,9 @@ pub fn handle_lock_liquidity_pda_creator(
 
     let signer_seeds = &[&seeds[..]];
 
-    msg!("Lock for pda");
-
     let cpi_context =
         CpiContext::new_with_signer(ctx.accounts.dynamic_amm_program.to_account_info(), accounts, signer_seeds);
     dynamic_amm::cpi::lock(cpi_context, pda_creator_lp_amount)?;
-
-    msg!("Lock for pda done");
-
 
     // 3. Initialize lock escrow for user 1
     let accounts = dynamic_amm::cpi::accounts::CreateLockEscrow {

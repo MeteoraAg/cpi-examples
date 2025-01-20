@@ -9,3 +9,6 @@ pub use initialize_permissionless_pool_with_config::*;
 
 pub mod lock_liquidity;
 pub use lock_liquidity::*;
+
+pub mod claim_fee;
+pub use claim_fee::*;
