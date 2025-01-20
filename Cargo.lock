@@ -1054,6 +1054,7 @@ dependencies = [
  "solana-client",
  "solana-program-test",
  "solana-sdk",
+ "spl-associated-token-account 2.2.0",
  "stake_for_fee_interface",
 ]
 

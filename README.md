@@ -1,6 +1,6 @@
 # Meteora-CPI-examples
 
-The repository containing examples for CPI (Cross-Program Invocation) to swap at [DLMM](https://github.com/meteoraAg/dlmm-sdk) and [Dynamic AMM](https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk) programs.
+The repository containing examples for CPI (Cross-Program Invocation) to [DLMM](https://github.com/meteoraAg/dlmm-sdk) and [Dynamic AMM](https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk) programs.
 
 Disclaimer: This repository only serves as examples and is not intended for production use.
 
@@ -17,6 +17,9 @@ Disclaimer: This repository only serves as examples and is not intended for prod
 
 - [CPI to Dynamic AMM initialize pool example](programs/cpi-example/src/instructions/dynamic_amm_cpi/initialize_customizable_permissionless_pool.rs)
 - [CPI to Dynamic AMM initialize pool with config example](programs/cpi-example/src/instructions/dynamic_amm_cpi/initialize_permissionless_pool_with_config.rs)
+
+- [CPI to Dynamic AMM lock liquidity example](programs/cpi-example/src/instructions/dynamic_amm_cpi/lock_liquidity.rs)
+- [CPI to Dynamic AMM claim fee example](programs/cpi-example/src/instructions/dynamic_amm_cpi/claim_fee.rs)
 
 - [CPI to M3m3 initialize vault example](programs/cpi-example/src/instructions/m3m3_cpi/initialize_vault.rs)
 
