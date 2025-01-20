@@ -166,7 +166,7 @@ pub fn handle_initialize_customizable_permissionless_pool_with_config(
 }
 
 #[derive(Accounts)]
-pub struct DynamicAmmInitializePermissionlessPoolWithConfigPoolPdaCreator<'info> {
+pub struct DynamicAmmInitializePermissionlessPoolWithConfigPdaCreator<'info> {
     /// CHECK: Creator authority
     #[account(
         mut,
@@ -302,7 +302,7 @@ pub struct DynamicAmmInitializePermissionlessPoolWithConfigPoolPdaCreator<'info>
 ///
 /// Returns a `Result` indicating success or failure.
 pub fn handle_initialize_customizable_permissionless_pool_with_pda_creator(
-    ctx: Context<DynamicAmmInitializePermissionlessPoolWithConfigPoolPdaCreator>,
+    ctx: Context<DynamicAmmInitializePermissionlessPoolWithConfigPdaCreator>,
     token_a_amount: u64,
     token_b_amount: u64,
     activation_point: Option<u64>,

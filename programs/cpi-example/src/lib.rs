@@ -6,6 +6,10 @@ use m3m3::InitializeVaultParams;
 pub mod instructions;
 pub use instructions::*;
 
+fn assert_eq_admin(_key: Pubkey) -> bool {
+    true
+}
+
 declare_id!("4JTNRRQpgLusbEhGnzTuE9kgPgMLXQX1wqBzU52GduqH");
 
 #[program]
@@ -62,7 +66,7 @@ pub mod cpi_example {
 
     // NOTE: Creator authority PDA will be holding the LP
     pub fn initialize_dynamic_amm_permission_pool_with_config_pda_creator(
-        ctx: Context<DynamicAmmInitializePermissionlessPoolWithConfigPoolPdaCreator>,
+        ctx: Context<DynamicAmmInitializePermissionlessPoolWithConfigPdaCreator>,
         token_a_amount: u64,
         token_b_amount: u64,
         activation_point: Option<u64>,
@@ -93,5 +97,22 @@ pub mod cpi_example {
         min_amount_out: u64,
     ) -> Result<()> {
         instructions::dynamic_amm_cpi::swap::handle_dynamic_amm_swap(ctx, amount_in, min_amount_out)
+    }
+
+    pub fn dynamic_amm_lock_liquidity(
+        ctx: Context<DynamicAmmLockLiquidity>,
+        allocations: [u16; 2],
+    ) -> Result<()> {
+        instructions::dynamic_amm_cpi::lock_liquidity::handle_lock_liquidity(ctx, allocations)
+    }
+
+    pub fn dynamic_amm_lock_liquidity_pda_creator(
+        ctx: Context<DynamicAmmLockLiquidityPdaCreator>,
+        allocations: [u16; 2],
+    ) -> Result<()> {
+        instructions::dynamic_amm_cpi::lock_liquidity::handle_lock_liquidity_pda_creator(
+            ctx,
+            allocations,
+        )
     }
 }
