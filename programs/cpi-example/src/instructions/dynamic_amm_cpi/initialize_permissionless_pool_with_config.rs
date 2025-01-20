@@ -169,6 +169,7 @@ pub fn handle_initialize_customizable_permissionless_pool_with_config(
 pub struct DynamicAmmInitializePermissionlessPoolWithConfigPoolPdaCreator<'info> {
     /// CHECK: Creator authority
     #[account(
+        mut,
         seeds = [b"creator"],
         bump
     )]
@@ -334,12 +335,12 @@ pub fn handle_initialize_customizable_permissionless_pool_with_pda_creator(
             b_vault_lp_mint: ctx.accounts.b_vault_lp_mint.to_account_info(),
             a_vault_lp: ctx.accounts.a_vault_lp.to_account_info(),
             b_vault_lp: ctx.accounts.b_vault_lp.to_account_info(),
-            payer_token_a: ctx.accounts.payer_token_a.to_account_info(),
-            payer_token_b: ctx.accounts.payer_token_b.to_account_info(),
+            payer_token_a: ctx.accounts.creator_token_a.to_account_info(),
+            payer_token_b: ctx.accounts.creator_token_b.to_account_info(),
             payer_pool_lp: ctx.accounts.creator_pool_lp.to_account_info(),
             protocol_token_a_fee: ctx.accounts.protocol_token_a_fee.to_account_info(),
             protocol_token_b_fee: ctx.accounts.protocol_token_b_fee.to_account_info(),
-            payer: ctx.accounts.payer.to_account_info(),
+            payer: ctx.accounts.creator_authority.to_account_info(),
             rent: ctx.accounts.rent.to_account_info(),
             mint_metadata: ctx.accounts.mint_metadata.to_account_info(),
             metadata_program: ctx.accounts.metadata_program.to_account_info(),
