@@ -4,9 +4,10 @@ use anchor_lang::{InstructionData, ToAccountMetas};
 use anchor_spl::associated_token::get_associated_token_address;
 use dynamic_amm::instructions::CustomizableParams;
 use dynamic_amm::state::Pool;
+use dynamic_amm_common::dynamic_amm::ix_account_builder::IxAccountBuilder;
+use dynamic_amm_common::dynamic_amm::pda::{derive_lock_escrow_key, METAPLEX_PROGRAM_ID};
 use dynamic_vault::state::Vault;
 use helpers::dynamic_amm_utils::setup_vault_from_cluster;
-use helpers::dynamic_amm_utils::*;
 use helpers::process_and_assert_ok;
 use helpers::*;
 use solana_program_test::*;
@@ -98,60 +99,62 @@ async fn test_claim_fee_pda_creator() {
     test.add_program("dynamic_vault", dynamic_vault::ID, None);
     test.add_program("metaplex", METAPLEX_PROGRAM_ID, None);
 
-    let jup_vault = setup_vault_from_cluster(&mut test, JUP, mock_user.pubkey()).await;
-    let usdc_vault = setup_vault_from_cluster(&mut test, USDC, mock_user.pubkey()).await;
+    setup_vault_from_cluster(&mut test, JUP, mock_user.pubkey()).await;
+    setup_vault_from_cluster(&mut test, USDC, mock_user.pubkey()).await;
 
     let (mut banks_client, _, _) = test.start().await;
 
     let (creator_authority, _bump) = Pubkey::find_program_address(&[b"creator"], &cpi_example::ID);
 
-    let creator_token_a = get_associated_token_address(&creator_authority, &JUP);
-    let creator_token_b = get_associated_token_address(&creator_authority, &USDC);
+    let account_fetcher = |address| {
+        let mut banks_client = banks_client.clone();
+        async move {
+            let account = banks_client.get_account(address).await.unwrap().unwrap();
+            Ok(account)
+        }
+    };
 
-    let pool_key = derive_customizable_permissionless_constant_product_pool_key(JUP, USDC);
-    let lp_mint = derive_lp_mint(pool_key);
-
-    let creator_pool_lp = get_associated_token_address(&creator_authority, &lp_mint);
-
-    let a_vault_lp = derive_vault_lp_key(jup_vault.key, pool_key);
-    let b_vault_lp = derive_vault_lp_key(usdc_vault.key, pool_key);
-
-    let protocol_token_a_fee = derive_protocol_fee_key(JUP, pool_key);
-    let protocol_token_b_fee = derive_protocol_fee_key(USDC, pool_key);
+    let init_pool_accounts =
+        IxAccountBuilder::initialize_customizable_permissionless_constant_product_pool(
+            JUP,
+            USDC,
+            creator_authority,
+            account_fetcher,
+        )
+        .await
+        .unwrap();
 
     let payer_token_a = get_associated_token_address(&mock_user.pubkey(), &JUP);
     let payer_token_b = get_associated_token_address(&mock_user.pubkey(), &USDC);
 
-    let metadata_pda = derive_metadata_key(lp_mint);
-
     // 1. Initialize pool
     let accounts =
         cpi_example::accounts::DynamicAmmInitializeCustomizablePermissionlessPoolPdaCreator {
-            pool: pool_key,
+            pool: init_pool_accounts.pool,
             creator_authority,
-            creator_token_a,
-            creator_token_b,
-            lp_mint,
-            token_a_mint: JUP,
-            token_b_mint: USDC,
-            a_vault: jup_vault.key,
-            b_vault: usdc_vault.key,
-            a_token_vault: jup_vault.vault_state.token_vault,
-            b_token_vault: usdc_vault.vault_state.token_vault,
-            a_vault_lp_mint: jup_vault.vault_state.lp_mint,
-            b_vault_lp_mint: usdc_vault.vault_state.lp_mint,
+            creator_token_a: init_pool_accounts.payer_token_a,
+            creator_token_b: init_pool_accounts.payer_token_b,
+            lp_mint: init_pool_accounts.lp_mint,
+            token_a_mint: init_pool_accounts.token_a_mint,
+            token_b_mint: init_pool_accounts.token_b_mint,
+            a_vault: init_pool_accounts.a_vault,
+            b_vault: init_pool_accounts.b_vault,
+            a_token_vault: init_pool_accounts.a_token_vault,
+            b_token_vault: init_pool_accounts.b_token_vault,
+            a_vault_lp_mint: init_pool_accounts.a_vault_lp_mint,
+            b_vault_lp_mint: init_pool_accounts.b_vault_lp_mint,
             payer: mock_user.pubkey(),
             token_program: anchor_spl::token::ID,
-            a_vault_lp,
-            b_vault_lp,
-            protocol_token_a_fee,
-            protocol_token_b_fee,
-            creator_pool_lp,
+            a_vault_lp: init_pool_accounts.a_vault_lp,
+            b_vault_lp: init_pool_accounts.b_vault_lp,
+            protocol_token_a_fee: init_pool_accounts.protocol_token_a_fee,
+            protocol_token_b_fee: init_pool_accounts.protocol_token_b_fee,
+            creator_pool_lp: init_pool_accounts.payer_pool_lp,
             payer_token_a,
             payer_token_b,
             rent: sysvar::rent::ID,
             metadata_program: METAPLEX_PROGRAM_ID,
-            mint_metadata: metadata_pda,
+            mint_metadata: init_pool_accounts.mint_metadata,
             vault_program: dynamic_vault::ID,
             associated_token_program: anchor_spl::associated_token::ID,
             system_program: system_program::ID,
@@ -194,29 +197,30 @@ async fn test_claim_fee_pda_creator() {
     let user = Keypair::new();
     let allocations = [5000_u16; 2];
 
-    let lock_escrow_creator = derive_lock_escrow(pool_key, creator_authority);
-    let lock_escrow_0 = derive_lock_escrow(pool_key, user.pubkey());
+    let lock_escrow_creator = derive_lock_escrow_key(init_pool_accounts.pool, creator_authority);
+    let lock_escrow_0 = derive_lock_escrow_key(init_pool_accounts.pool, user.pubkey());
 
-    let escrow_vault_creator = get_associated_token_address(&lock_escrow_creator, &lp_mint);
-    let escrow_vault_0 = get_associated_token_address(&lock_escrow_0, &lp_mint);
+    let escrow_vault_creator =
+        get_associated_token_address(&lock_escrow_creator, &init_pool_accounts.lp_mint);
+    let escrow_vault_0 = get_associated_token_address(&lock_escrow_0, &init_pool_accounts.lp_mint);
 
     let accounts = cpi_example::accounts::DynamicAmmLockLiquidityPdaCreator {
-        pool: pool_key,
+        pool: init_pool_accounts.pool,
         creator_authority,
         lock_escrow_creator,
-        lp_mint,
+        lp_mint: init_pool_accounts.lp_mint,
         lock_escrow_0,
-        source_lp_tokens: creator_pool_lp,
+        source_lp_tokens: init_pool_accounts.payer_pool_lp,
         escrow_vault_0,
         escrow_vault_creator,
         payer: mock_user.pubkey(),
         user_0: user.pubkey(),
-        a_vault: jup_vault.key,
-        b_vault: usdc_vault.key,
-        a_vault_lp,
-        b_vault_lp,
-        a_vault_lp_mint: jup_vault.vault_state.lp_mint,
-        b_vault_lp_mint: usdc_vault.vault_state.lp_mint,
+        a_vault: init_pool_accounts.a_vault,
+        b_vault: init_pool_accounts.b_vault,
+        a_vault_lp: init_pool_accounts.a_vault_lp,
+        b_vault_lp: init_pool_accounts.b_vault_lp,
+        a_vault_lp_mint: init_pool_accounts.a_vault_lp_mint,
+        b_vault_lp_mint: init_pool_accounts.b_vault_lp_mint,
         dynamic_amm_program: dynamic_amm::ID,
         system_program: system_program::ID,
         token_program: anchor_spl::token::ID,
@@ -236,26 +240,26 @@ async fn test_claim_fee_pda_creator() {
     process_and_assert_ok(&[instruction], &mock_user, &[&mock_user], &mut banks_client).await;
 
     // 3. Generate some swap fee
-    generate_swap_fees(&mut banks_client, pool_key, &mock_user).await;
+    generate_swap_fees(&mut banks_client, init_pool_accounts.pool, &mock_user).await;
 
     // 4. Claim fee
     let accounts = cpi_example::accounts::DynamicAmmClaimFeePdaCreator {
-        pool: pool_key,
-        lp_mint,
+        pool: init_pool_accounts.pool,
+        lp_mint: init_pool_accounts.lp_mint,
         creator_authority,
         lock_escrow: lock_escrow_creator,
         escrow_vault: escrow_vault_creator,
-        a_token_vault: jup_vault.vault_state.token_vault,
-        b_token_vault: usdc_vault.vault_state.token_vault,
+        a_token_vault: init_pool_accounts.a_token_vault,
+        b_token_vault: init_pool_accounts.b_token_vault,
         cpi_example_admin: mock_user.pubkey(),
-        a_vault: jup_vault.key,
-        b_vault: usdc_vault.key,
-        a_vault_lp,
-        b_vault_lp,
-        a_vault_lp_mint: jup_vault.vault_state.lp_mint,
-        b_vault_lp_mint: usdc_vault.vault_state.lp_mint,
-        creator_a_token: creator_token_a,
-        creator_b_token: creator_token_b,
+        a_vault: init_pool_accounts.a_vault,
+        b_vault: init_pool_accounts.b_vault,
+        a_vault_lp: init_pool_accounts.a_vault_lp,
+        b_vault_lp: init_pool_accounts.b_vault_lp,
+        a_vault_lp_mint: init_pool_accounts.a_vault_lp_mint,
+        b_vault_lp_mint: init_pool_accounts.b_vault_lp_mint,
+        creator_a_token: init_pool_accounts.payer_token_a,
+        creator_b_token: init_pool_accounts.payer_token_b,
         token_program: anchor_spl::token::ID,
         dynamic_amm: dynamic_amm::ID,
         dynamic_vault: dynamic_vault::ID,
@@ -288,51 +292,53 @@ async fn test_claim_fee() {
     test.add_program("dynamic_vault", dynamic_vault::ID, None);
     test.add_program("metaplex", METAPLEX_PROGRAM_ID, None);
 
-    let jup_vault = setup_vault_from_cluster(&mut test, JUP, mock_user.pubkey()).await;
-    let usdc_vault = setup_vault_from_cluster(&mut test, USDC, mock_user.pubkey()).await;
+    setup_vault_from_cluster(&mut test, JUP, mock_user.pubkey()).await;
+    setup_vault_from_cluster(&mut test, USDC, mock_user.pubkey()).await;
 
     let (mut banks_client, _, _) = test.start().await;
 
-    let pool_key = derive_customizable_permissionless_constant_product_pool_key(JUP, USDC);
-    let lp_mint = derive_lp_mint(pool_key);
+    let account_fetcher = |address| {
+        let mut banks_client = banks_client.clone();
+        async move {
+            let account = banks_client.get_account(address).await.unwrap().unwrap();
+            Ok(account)
+        }
+    };
 
-    let payer_pool_lp = get_associated_token_address(&mock_user.pubkey(), &lp_mint);
-
-    let a_vault_lp = derive_vault_lp_key(jup_vault.key, pool_key);
-    let b_vault_lp = derive_vault_lp_key(usdc_vault.key, pool_key);
-
-    let protocol_token_a_fee = derive_protocol_fee_key(JUP, pool_key);
-    let protocol_token_b_fee = derive_protocol_fee_key(USDC, pool_key);
-
-    let payer_token_a = get_associated_token_address(&mock_user.pubkey(), &JUP);
-    let payer_token_b = get_associated_token_address(&mock_user.pubkey(), &USDC);
-
-    let metadata_pda = derive_metadata_key(lp_mint);
+    let init_pool_accounts =
+        IxAccountBuilder::initialize_customizable_permissionless_constant_product_pool(
+            JUP,
+            USDC,
+            mock_user.pubkey(),
+            account_fetcher,
+        )
+        .await
+        .unwrap();
 
     // 1. Initialize pool
     let accounts = cpi_example::accounts::DynamicAmmInitializeCustomizablePermissionlessPool {
-        pool: pool_key,
-        lp_mint,
-        token_a_mint: JUP,
-        token_b_mint: USDC,
-        a_vault: jup_vault.key,
-        b_vault: usdc_vault.key,
-        a_token_vault: jup_vault.vault_state.token_vault,
-        b_token_vault: usdc_vault.vault_state.token_vault,
-        a_vault_lp_mint: jup_vault.vault_state.lp_mint,
-        b_vault_lp_mint: usdc_vault.vault_state.lp_mint,
+        pool: init_pool_accounts.pool,
+        lp_mint: init_pool_accounts.lp_mint,
+        token_a_mint: init_pool_accounts.token_a_mint,
+        token_b_mint: init_pool_accounts.token_b_mint,
+        a_vault: init_pool_accounts.a_vault,
+        b_vault: init_pool_accounts.b_vault,
+        a_token_vault: init_pool_accounts.a_token_vault,
+        b_token_vault: init_pool_accounts.b_token_vault,
+        a_vault_lp_mint: init_pool_accounts.a_vault_lp_mint,
+        b_vault_lp_mint: init_pool_accounts.b_vault_lp_mint,
         payer: mock_user.pubkey(),
         token_program: anchor_spl::token::ID,
-        a_vault_lp,
-        b_vault_lp,
-        protocol_token_a_fee,
-        protocol_token_b_fee,
-        payer_pool_lp,
-        payer_token_a,
-        payer_token_b,
+        a_vault_lp: init_pool_accounts.a_vault_lp,
+        b_vault_lp: init_pool_accounts.b_vault_lp,
+        protocol_token_a_fee: init_pool_accounts.protocol_token_a_fee,
+        protocol_token_b_fee: init_pool_accounts.protocol_token_b_fee,
+        payer_pool_lp: init_pool_accounts.payer_pool_lp,
+        payer_token_a: init_pool_accounts.payer_token_a,
+        payer_token_b: init_pool_accounts.payer_token_b,
         rent: sysvar::rent::ID,
         metadata_program: METAPLEX_PROGRAM_ID,
-        mint_metadata: metadata_pda,
+        mint_metadata: init_pool_accounts.mint_metadata,
         vault_program: dynamic_vault::ID,
         associated_token_program: anchor_spl::associated_token::ID,
         system_program: system_program::ID,
@@ -377,29 +383,29 @@ async fn test_claim_fee() {
 
     let allocations = [5000_u16; 2];
 
-    let lock_escrow_0 = derive_lock_escrow(pool_key, user_0);
-    let lock_escrow_1 = derive_lock_escrow(pool_key, user_1);
+    let lock_escrow_0 = derive_lock_escrow_key(init_pool_accounts.pool, user_0);
+    let lock_escrow_1 = derive_lock_escrow_key(init_pool_accounts.pool, user_1);
 
-    let escrow_vault_0 = get_associated_token_address(&lock_escrow_0, &lp_mint);
-    let escrow_vault_1 = get_associated_token_address(&lock_escrow_1, &lp_mint);
+    let escrow_vault_0 = get_associated_token_address(&lock_escrow_0, &init_pool_accounts.lp_mint);
+    let escrow_vault_1 = get_associated_token_address(&lock_escrow_1, &init_pool_accounts.lp_mint);
 
     let accounts = cpi_example::accounts::DynamicAmmLockLiquidity {
-        pool: pool_key,
+        pool: init_pool_accounts.pool,
         lock_escrow_1,
-        lp_mint,
+        lp_mint: init_pool_accounts.lp_mint,
         lock_escrow_0,
-        source_lp_tokens: payer_pool_lp,
+        source_lp_tokens: init_pool_accounts.payer_pool_lp,
         escrow_vault_0,
         escrow_vault_1,
         payer: mock_user.pubkey(),
         user_0,
         user_1,
-        a_vault: jup_vault.key,
-        b_vault: usdc_vault.key,
-        a_vault_lp,
-        b_vault_lp,
-        a_vault_lp_mint: jup_vault.vault_state.lp_mint,
-        b_vault_lp_mint: usdc_vault.vault_state.lp_mint,
+        a_vault: init_pool_accounts.a_vault,
+        b_vault: init_pool_accounts.b_vault,
+        a_vault_lp: init_pool_accounts.a_vault_lp,
+        b_vault_lp: init_pool_accounts.b_vault_lp,
+        a_vault_lp_mint: init_pool_accounts.a_vault_lp_mint,
+        b_vault_lp_mint: init_pool_accounts.b_vault_lp_mint,
         dynamic_amm_program: dynamic_amm::ID,
         system_program: system_program::ID,
         token_program: anchor_spl::token::ID,
@@ -418,24 +424,24 @@ async fn test_claim_fee() {
     process_and_assert_ok(&[instruction], &mock_user, &[&mock_user], &mut banks_client).await;
 
     // 3. Generate some swap fees
-    generate_swap_fees(&mut banks_client, pool_key, &mock_user).await;
+    generate_swap_fees(&mut banks_client, init_pool_accounts.pool, &mock_user).await;
 
     // 4. Claim fee for user 0 + 1
     for user in [&mock_user, &user_1_kp] {
-        let lock_escrow = derive_lock_escrow(pool_key, user.pubkey());
-        let escrow_vault = get_associated_token_address(&lock_escrow, &lp_mint);
+        let lock_escrow = derive_lock_escrow_key(init_pool_accounts.pool, user.pubkey());
+        let escrow_vault = get_associated_token_address(&lock_escrow, &init_pool_accounts.lp_mint);
 
         let user_token_a =
-            get_associated_token_address(&user.pubkey(), &jup_vault.vault_state.token_mint);
+            get_associated_token_address(&user.pubkey(), &init_pool_accounts.token_a_mint);
 
         let user_token_b =
-            get_associated_token_address(&user.pubkey(), &usdc_vault.vault_state.token_mint);
+            get_associated_token_address(&user.pubkey(), &init_pool_accounts.token_b_mint);
 
         let init_user_token_a_ix =
             spl_associated_token_account::instruction::create_associated_token_account_idempotent(
                 &mock_user.pubkey(),
                 &user.pubkey(),
-                &jup_vault.vault_state.token_mint,
+                &init_pool_accounts.token_a_mint,
                 &anchor_spl::token::ID,
             );
 
@@ -443,23 +449,23 @@ async fn test_claim_fee() {
             spl_associated_token_account::instruction::create_associated_token_account_idempotent(
                 &mock_user.pubkey(),
                 &user.pubkey(),
-                &usdc_vault.vault_state.token_mint,
+                &init_pool_accounts.token_b_mint,
                 &anchor_spl::token::ID,
             );
 
         let accounts = cpi_example::accounts::DynamicAmmClaimFee {
-            pool: pool_key,
-            a_vault: jup_vault.key,
-            b_vault: usdc_vault.key,
-            a_vault_lp,
-            b_vault_lp,
-            a_token_vault: jup_vault.vault_state.token_vault,
-            b_token_vault: usdc_vault.vault_state.token_vault,
-            a_vault_lp_mint: jup_vault.vault_state.lp_mint,
-            b_vault_lp_mint: usdc_vault.vault_state.lp_mint,
+            pool: init_pool_accounts.pool,
+            a_vault: init_pool_accounts.a_vault,
+            b_vault: init_pool_accounts.b_vault,
+            a_vault_lp: init_pool_accounts.a_vault_lp,
+            b_vault_lp: init_pool_accounts.b_vault_lp,
+            a_token_vault: init_pool_accounts.a_token_vault,
+            b_token_vault: init_pool_accounts.b_token_vault,
+            a_vault_lp_mint: init_pool_accounts.a_vault_lp_mint,
+            b_vault_lp_mint: init_pool_accounts.b_vault_lp_mint,
             lock_escrow,
             escrow_vault,
-            lp_mint,
+            lp_mint: init_pool_accounts.lp_mint,
             owner: user.pubkey(),
             user_a_token: user_token_a,
             user_b_token: user_token_b,

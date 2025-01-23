@@ -3,102 +3,13 @@ use anchor_spl::{
     associated_token::get_associated_token_address, token::spl_token::state::AccountState,
 };
 use dynamic_amm::state::Pool;
+use dynamic_amm_common::dynamic_vault::pda::derive_vault_key;
 use dynamic_vault::state::Vault;
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_program_test::ProgramTest;
 use solana_sdk::{account::Account, pubkey::Pubkey};
 
 use super::{utils::add_packable_account, RPC};
-
-const VAULT_BASE_KEY: Pubkey = solana_sdk::pubkey!("HWzXGcGHy4tcpYfaRDCyLNzXqBTv3E6BttpCH2vJxArv");
-pub const METAPLEX_PROGRAM_ID: Pubkey =
-    solana_sdk::pubkey!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
-
-/// get first key, this is same as max(key1, key2)
-pub fn get_first_key(key1: Pubkey, key2: Pubkey) -> Pubkey {
-    if key1 > key2 {
-        return key1;
-    }
-    key2
-}
-/// get second key, this is same as min(key1, key2)
-pub fn get_second_key(key1: Pubkey, key2: Pubkey) -> Pubkey {
-    if key1 > key2 {
-        return key2;
-    }
-    key1
-}
-
-pub fn derive_protocol_fee_key(mint_key: Pubkey, pool_key: Pubkey) -> Pubkey {
-    Pubkey::find_program_address(
-        &[b"fee", mint_key.as_ref(), pool_key.as_ref()],
-        &dynamic_amm::ID,
-    )
-    .0
-}
-
-pub fn derive_metadata_key(lp_mint: Pubkey) -> Pubkey {
-    Pubkey::find_program_address(
-        &[b"metadata", METAPLEX_PROGRAM_ID.as_ref(), lp_mint.as_ref()],
-        &METAPLEX_PROGRAM_ID,
-    )
-    .0
-}
-
-pub fn derive_vault_lp_key(vault_key: Pubkey, pool_key: Pubkey) -> Pubkey {
-    Pubkey::find_program_address(&[vault_key.as_ref(), pool_key.as_ref()], &dynamic_amm::ID).0
-}
-
-pub fn derive_lp_mint(pool_key: Pubkey) -> Pubkey {
-    Pubkey::find_program_address(&[b"lp_mint", pool_key.as_ref()], &dynamic_amm::ID).0
-}
-
-pub fn derive_lock_escrow(pool_key: Pubkey, owner_key: Pubkey) -> Pubkey {
-    Pubkey::find_program_address(
-        &[b"lock_escrow", pool_key.as_ref(), owner_key.as_ref()],
-        &dynamic_amm::ID,
-    )
-    .0
-}
-
-pub fn derive_customizable_permissionless_constant_product_pool_key(
-    mint_a: Pubkey,
-    mint_b: Pubkey,
-) -> Pubkey {
-    Pubkey::find_program_address(
-        &[
-            b"pool",
-            get_first_key(mint_a, mint_b).as_ref(),
-            get_second_key(mint_a, mint_b).as_ref(),
-        ],
-        &dynamic_amm::ID,
-    )
-    .0
-}
-
-pub fn derive_permissionless_constant_product_pool_with_config_key(
-    mint_a: Pubkey,
-    mint_b: Pubkey,
-    config: Pubkey,
-) -> Pubkey {
-    Pubkey::find_program_address(
-        &[
-            get_first_key(mint_a, mint_b).as_ref(),
-            get_second_key(mint_a, mint_b).as_ref(),
-            config.as_ref(),
-        ],
-        &dynamic_amm::ID,
-    )
-    .0
-}
-
-pub fn derive_vault_address(mint: Pubkey) -> Pubkey {
-    Pubkey::find_program_address(
-        &[b"vault", &mint.to_bytes(), &VAULT_BASE_KEY.to_bytes()],
-        &dynamic_vault::ID,
-    )
-    .0
-}
 
 pub struct VaultSetupContext {
     pub key: Pubkey,
@@ -119,7 +30,7 @@ pub async fn setup_vault_from_cluster(
 ) -> VaultSetupContext {
     let rpc_client = RpcClient::new(RPC.to_owned());
 
-    let vault_key = derive_vault_address(mint);
+    let vault_key = derive_vault_key(mint);
 
     let vault_account = rpc_client.get_account(&vault_key).await.unwrap();
     let vault_state = Vault::try_deserialize(&mut vault_account.data.as_ref()).unwrap();

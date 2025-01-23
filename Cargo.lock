@@ -969,6 +969,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "common"
+version = "0.0.1"
+source = "git+https://github.com/meteoraAg/stake-for-fee-sdk?rev=60b1d2e8e3629e1c99377843fb377665247e82b1#60b1d2e8e3629e1c99377843fb377665247e82b1"
+dependencies = [
+ "solana-sdk",
+ "stake_for_fee_interface",
+]
+
+[[package]]
+name = "common"
+version = "0.0.5"
+source = "git+https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk?rev=726c425a439d1458a4c82abe5e8ae927aede9089#726c425a439d1458a4c82abe5e8ae927aede9089"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "dynamic-amm",
+ "dynamic-vault",
+ "mpl-token-metadata",
+ "solana-sdk",
+ "spl-associated-token-account 2.2.0",
+]
+
+[[package]]
 name = "concurrent-queue"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1047,6 +1070,8 @@ dependencies = [
  "assert_matches",
  "bincode",
  "bytemuck",
+ "common 0.0.1",
+ "common 0.0.5",
  "dynamic-amm",
  "dynamic-vault",
  "lb_clmm",
@@ -1338,7 +1363,7 @@ dependencies = [
 [[package]]
 name = "dynamic-amm"
 version = "0.6.1"
-source = "git+https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk?rev=ae46f2a44edbd8231467effd530c1eeecc231a1b#ae46f2a44edbd8231467effd530c1eeecc231a1b"
+source = "git+https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk?rev=726c425a439d1458a4c82abe5e8ae927aede9089#726c425a439d1458a4c82abe5e8ae927aede9089"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -1348,7 +1373,7 @@ dependencies = [
 [[package]]
 name = "dynamic-vault"
 version = "0.1.0"
-source = "git+https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk?rev=ae46f2a44edbd8231467effd530c1eeecc231a1b#ae46f2a44edbd8231467effd530c1eeecc231a1b"
+source = "git+https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk?rev=726c425a439d1458a4c82abe5e8ae927aede9089#726c425a439d1458a4c82abe5e8ae927aede9089"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -4870,7 +4895,7 @@ dependencies = [
 [[package]]
 name = "stake_for_fee_interface"
 version = "0.1.0"
-source = "git+https://github.com/meteoraAg/stake-for-fee-sdk?rev=796ed09b500a92c36927915d22cce28ef78b2a8d#796ed09b500a92c36927915d22cce28ef78b2a8d"
+source = "git+https://github.com/meteoraAg/stake-for-fee-sdk?rev=60b1d2e8e3629e1c99377843fb377665247e82b1#60b1d2e8e3629e1c99377843fb377665247e82b1"
 dependencies = [
  "borsh 0.10.3",
  "num-derive 0.3.3",
