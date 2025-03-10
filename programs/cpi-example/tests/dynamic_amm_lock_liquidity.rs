@@ -37,23 +37,12 @@ async fn test_lock_liquidity_pda_creator() {
 
     let (creator_authority, _bump) = Pubkey::find_program_address(&[b"creator"], &cpi_example::ID);
 
-    let account_fetcher = |address| {
-        let mut banks_client = banks_client.clone();
-        async move {
-            let account = banks_client.get_account(address).await.unwrap().unwrap();
-            Ok(account)
-        }
-    };
-
     let init_pool_accounts =
         IxAccountBuilder::initialize_customizable_permissionless_constant_product_pool(
             JUP,
             USDC,
             creator_authority,
-            account_fetcher,
-        )
-        .await
-        .unwrap();
+        );
 
     let payer_token_a = get_associated_token_address(&mock_user.pubkey(), &JUP);
     let payer_token_b = get_associated_token_address(&mock_user.pubkey(), &USDC);
@@ -200,23 +189,12 @@ async fn test_lock_liquidity() {
 
     let (mut banks_client, _, _) = test.start().await;
 
-    let account_fetcher = |address| {
-        let mut banks_client = banks_client.clone();
-        async move {
-            let account = banks_client.get_account(address).await.unwrap().unwrap();
-            Ok(account)
-        }
-    };
-
     let init_pool_accounts =
         IxAccountBuilder::initialize_customizable_permissionless_constant_product_pool(
             JUP,
             USDC,
             mock_user.pubkey(),
-            account_fetcher,
-        )
-        .await
-        .unwrap();
+        );
 
     // 1. Initialize pool
     let accounts = cpi_example::accounts::DynamicAmmInitializeCustomizablePermissionlessPool {

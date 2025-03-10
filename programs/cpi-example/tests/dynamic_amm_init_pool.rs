@@ -38,23 +38,12 @@ async fn test_initialize_customizable_permissionless_pool_with_pda_creator() {
 
     let (creator_authority, _bump) = Pubkey::find_program_address(&[b"creator"], &cpi_example::ID);
 
-    let account_fetcher = |address| {
-        let mut banks_client = banks_client.clone();
-        async move {
-            let account = banks_client.get_account(address).await.unwrap().unwrap();
-            Ok(account)
-        }
-    };
-
     let init_pool_accounts =
         IxAccountBuilder::initialize_customizable_permissionless_constant_product_pool(
             JUP,
             USDC,
             creator_authority,
-            account_fetcher,
-        )
-        .await
-        .unwrap();
+        );
 
     let payer_token_a = get_associated_token_address(&mock_user.pubkey(), &JUP);
     let payer_token_b = get_associated_token_address(&mock_user.pubkey(), &USDC);
@@ -145,23 +134,12 @@ async fn test_initialize_customizable_permissionless_pool() {
 
     let (mut banks_client, _, _) = test.start().await;
 
-    let account_fetcher = |address| {
-        let mut banks_client = banks_client.clone();
-        async move {
-            let account = banks_client.get_account(address).await.unwrap().unwrap();
-            Ok(account)
-        }
-    };
-
     let init_pool_accounts =
         IxAccountBuilder::initialize_customizable_permissionless_constant_product_pool(
             JUP,
             USDC,
             mock_user.pubkey(),
-            account_fetcher,
-        )
-        .await
-        .unwrap();
+        );
 
     let accounts = cpi_example::accounts::DynamicAmmInitializeCustomizablePermissionlessPool {
         pool: init_pool_accounts.pool,
@@ -245,24 +223,13 @@ async fn test_initialize_permissionless_pool_with_config() {
 
     let (mut banks_client, _, _) = test.start().await;
 
-    let account_fetcher = |address| {
-        let mut banks_client = banks_client.clone();
-        async move {
-            let account = banks_client.get_account(address).await.unwrap().unwrap();
-            Ok(account)
-        }
-    };
-
     let init_pool_accounts =
         IxAccountBuilder::initialize_permissionless_constant_product_pool_with_config_accounts(
             JUP,
             USDC,
             CONFIG,
             mock_user.pubkey(),
-            account_fetcher,
-        )
-        .await
-        .unwrap();
+        );
 
     let accounts = cpi_example::accounts::DynamicAmmInitializePermissionlessPoolWithConfig {
         pool: init_pool_accounts.pool,
@@ -343,24 +310,13 @@ async fn test_initialize_permissionless_pool_with_config_pda_pool_creator() {
 
     let (creator_authority, _bump) = Pubkey::find_program_address(&[b"creator"], &cpi_example::ID);
 
-    let account_fetcher = |address| {
-        let mut banks_client = banks_client.clone();
-        async move {
-            let account = banks_client.get_account(address).await.unwrap().unwrap();
-            Ok(account)
-        }
-    };
-
     let init_pool_accounts =
         IxAccountBuilder::initialize_permissionless_constant_product_pool_with_config_accounts(
             JUP,
             USDC,
             CONFIG,
             creator_authority,
-            account_fetcher,
-        )
-        .await
-        .unwrap();
+        );
 
     let payer_token_a = get_associated_token_address(&mock_user.pubkey(), &JUP);
     let payer_token_b = get_associated_token_address(&mock_user.pubkey(), &USDC);

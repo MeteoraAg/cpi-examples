@@ -1,6 +1,6 @@
 # Meteora-CPI-examples
 
-The repository containing examples for CPI (Cross-Program Invocation) to [DLMM](https://github.com/meteoraAg/dlmm-sdk) and [Dynamic AMM](https://github.com/mercurial-finance/mercurial-dynamic-amm-sdk) programs.
+The repository containing examples for CPI (Cross-Program Invocation) to [DLMM](https://github.com/meteoraAg/dlmm-sdk) and [Dynamic AMM](https://github.com/MeteoraAG/dynamic-amm-sdk) programs.
 
 Disclaimer: This repository only serves as examples and is not intended for production use.
 

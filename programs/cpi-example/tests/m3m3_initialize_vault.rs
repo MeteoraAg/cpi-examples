@@ -40,23 +40,13 @@ async fn test_initialize_m3m3_vault() {
     let (mut banks_client, _, _) = test.start().await;
 
     // 1. Create pool
-    let account_fetcher = |address| {
-        let mut banks_client = banks_client.clone();
-        async move {
-            let account = banks_client.get_account(address).await.unwrap().unwrap();
-            Ok(account)
-        }
-    };
 
     let init_pool_accounts =
         IxAccountBuilder::initialize_customizable_permissionless_constant_product_pool(
             JUP,
             USDC,
             mock_user.pubkey(),
-            account_fetcher,
-        )
-        .await
-        .unwrap();
+        );
 
     let accounts = cpi_example::accounts::DynamicAmmInitializeCustomizablePermissionlessPool {
         pool: init_pool_accounts.pool,
