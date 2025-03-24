@@ -1,20 +1,20 @@
+#![allow(dead_code)]
+use super::dynamic_vault_pda::derive_vault_key;
+use super::{utils::add_packable_account, RPC};
 use anchor_lang::AccountDeserialize;
 use anchor_spl::{
     associated_token::get_associated_token_address, token::spl_token::state::AccountState,
 };
-use dynamic_amm::state::Pool;
-use dynamic_amm_common::dynamic_vault::pda::derive_vault_key;
-use dynamic_vault::state::Vault;
+use cpi_example::dynamic_amm::accounts::Pool;
+use cpi_example::dynamic_vault::accounts::Vault;
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_program_test::ProgramTest;
 use solana_sdk::{account::Account, pubkey::Pubkey};
 
-use super::{utils::add_packable_account, RPC};
-
 pub struct VaultSetupContext {
-    pub key: Pubkey,
-    pub vault_state: Vault,
-    pub user_token_account: Pubkey,
+    key: Pubkey,
+    vault_state: Vault,
+    user_token_account: Pubkey,
 }
 
 pub async fn setup_pool_config_from_cluster(test: &mut ProgramTest, config: Pubkey) {

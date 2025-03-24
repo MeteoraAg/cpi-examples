@@ -1,2 +1,5 @@
-pub mod swap;
-pub use swap::*;
+mod swap;
+
+pub mod dlmm_swap {
+    pub use super::swap::*;
+}

@@ -1,9 +1,9 @@
-mod helpers;
+use crate::helpers;
 use anchor_lang::{InstructionData, ToAccountMetas};
 use anchor_spl::associated_token::get_associated_token_address;
-use dynamic_amm::instructions::CustomizableParams;
-use dynamic_amm_common::dynamic_amm::ix_account_builder::IxAccountBuilder;
-use dynamic_amm_common::dynamic_amm::pda::METAPLEX_PROGRAM_ID;
+use cpi_example::dynamic_amm::types::CustomizableParams;
+use helpers::dynamic_amm_ix_account_builder::IxAccountBuilder;
+use helpers::dynamic_amm_pda::METAPLEX_PROGRAM_ID;
 use helpers::dynamic_amm_utils::setup_vault_from_cluster;
 use helpers::dynamic_amm_utils::*;
 use helpers::process_and_assert_ok;
@@ -20,15 +20,11 @@ use solana_sdk::{system_program, sysvar};
 async fn test_initialize_customizable_permissionless_pool_with_pda_creator() {
     let mock_user = Keypair::new();
 
-    let mut test = ProgramTest::new(
-        "cpi_example",
-        cpi_example::id(),
-        processor!(cpi_example::entry),
-    );
+    let mut test = setup_cpi_example_program();
     test.prefer_bpf(true);
 
-    test.add_program("dynamic_amm", dynamic_amm::ID, None);
-    test.add_program("dynamic_vault", dynamic_vault::ID, None);
+    test.add_program("dynamic_amm", cpi_example::dynamic_amm::ID, None);
+    test.add_program("dynamic_vault", cpi_example::dynamic_vault::ID, None);
     test.add_program("metaplex", METAPLEX_PROGRAM_ID, None);
 
     setup_vault_from_cluster(&mut test, JUP, mock_user.pubkey()).await;
@@ -75,10 +71,10 @@ async fn test_initialize_customizable_permissionless_pool_with_pda_creator() {
             rent: sysvar::rent::ID,
             metadata_program: METAPLEX_PROGRAM_ID,
             mint_metadata: init_pool_accounts.mint_metadata,
-            vault_program: dynamic_vault::ID,
+            vault_program: cpi_example::dynamic_vault::ID,
             associated_token_program: anchor_spl::associated_token::ID,
             system_program: system_program::ID,
-            dynamic_amm_program: dynamic_amm::ID,
+            dynamic_amm_program: cpi_example::dynamic_amm::ID,
         }
         .to_account_metas(None);
 
@@ -118,15 +114,11 @@ async fn test_initialize_customizable_permissionless_pool_with_pda_creator() {
 async fn test_initialize_customizable_permissionless_pool() {
     let mock_user = Keypair::new();
 
-    let mut test = ProgramTest::new(
-        "cpi_example",
-        cpi_example::id(),
-        processor!(cpi_example::entry),
-    );
+    let mut test = setup_cpi_example_program();
     test.prefer_bpf(true);
 
-    test.add_program("dynamic_amm", dynamic_amm::ID, None);
-    test.add_program("dynamic_vault", dynamic_vault::ID, None);
+    test.add_program("dynamic_amm", cpi_example::dynamic_amm::ID, None);
+    test.add_program("dynamic_vault", cpi_example::dynamic_vault::ID, None);
     test.add_program("metaplex", METAPLEX_PROGRAM_ID, None);
 
     setup_vault_from_cluster(&mut test, JUP, mock_user.pubkey()).await;
@@ -164,10 +156,10 @@ async fn test_initialize_customizable_permissionless_pool() {
         rent: sysvar::rent::ID,
         metadata_program: METAPLEX_PROGRAM_ID,
         mint_metadata: init_pool_accounts.mint_metadata,
-        vault_program: dynamic_vault::ID,
+        vault_program: cpi_example::dynamic_vault::ID,
         associated_token_program: anchor_spl::associated_token::ID,
         system_program: system_program::ID,
-        dynamic_amm_program: dynamic_amm::ID,
+        dynamic_amm_program: cpi_example::dynamic_amm::ID,
     }
     .to_account_metas(None);
 
@@ -206,15 +198,11 @@ async fn test_initialize_customizable_permissionless_pool() {
 async fn test_initialize_permissionless_pool_with_config() {
     let mock_user = Keypair::new();
 
-    let mut test = ProgramTest::new(
-        "cpi_example",
-        cpi_example::id(),
-        processor!(cpi_example::entry),
-    );
+    let mut test = setup_cpi_example_program();
     test.prefer_bpf(true);
 
-    test.add_program("dynamic_amm", dynamic_amm::ID, None);
-    test.add_program("dynamic_vault", dynamic_vault::ID, None);
+    test.add_program("dynamic_amm", cpi_example::dynamic_amm::ID, None);
+    test.add_program("dynamic_vault", cpi_example::dynamic_vault::ID, None);
     test.add_program("metaplex", METAPLEX_PROGRAM_ID, None);
 
     setup_vault_from_cluster(&mut test, JUP, mock_user.pubkey()).await;
@@ -254,10 +242,10 @@ async fn test_initialize_permissionless_pool_with_config() {
         rent: sysvar::rent::ID,
         metadata_program: METAPLEX_PROGRAM_ID,
         mint_metadata: init_pool_accounts.mint_metadata,
-        vault_program: dynamic_vault::ID,
+        vault_program: cpi_example::dynamic_vault::ID,
         associated_token_program: anchor_spl::associated_token::ID,
         system_program: system_program::ID,
-        dynamic_amm_program: dynamic_amm::ID,
+        dynamic_amm_program: cpi_example::dynamic_amm::ID,
         config: CONFIG,
     }
     .to_account_metas(None);
@@ -291,15 +279,11 @@ async fn test_initialize_permissionless_pool_with_config() {
 async fn test_initialize_permissionless_pool_with_config_pda_pool_creator() {
     let mock_user = Keypair::new();
 
-    let mut test = ProgramTest::new(
-        "cpi_example",
-        cpi_example::id(),
-        processor!(cpi_example::entry),
-    );
+    let mut test = setup_cpi_example_program();
     test.prefer_bpf(true);
 
-    test.add_program("dynamic_amm", dynamic_amm::ID, None);
-    test.add_program("dynamic_vault", dynamic_vault::ID, None);
+    test.add_program("dynamic_amm", cpi_example::dynamic_amm::ID, None);
+    test.add_program("dynamic_vault", cpi_example::dynamic_vault::ID, None);
     test.add_program("metaplex", METAPLEX_PROGRAM_ID, None);
 
     setup_vault_from_cluster(&mut test, JUP, mock_user.pubkey()).await;
@@ -348,10 +332,10 @@ async fn test_initialize_permissionless_pool_with_config_pda_pool_creator() {
             rent: sysvar::rent::ID,
             metadata_program: METAPLEX_PROGRAM_ID,
             mint_metadata: init_pool_accounts.mint_metadata,
-            vault_program: dynamic_vault::ID,
+            vault_program: cpi_example::dynamic_vault::ID,
             associated_token_program: anchor_spl::associated_token::ID,
             system_program: system_program::ID,
-            dynamic_amm_program: dynamic_amm::ID,
+            dynamic_amm_program: cpi_example::dynamic_amm::ID,
             config: CONFIG,
         }
         .to_account_metas(None);

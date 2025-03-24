@@ -6,9 +6,9 @@ Disclaimer: This repository only serves as examples and is not intended for prod
 
 ## Dependencies
 
-- anchor 0.28.0
-- solana 1.16.1
-- rust 1.68.0
+- anchor 0.31.0
+- solana 2.1.0
+- rust 1.85.0
 
 ## Contents
 

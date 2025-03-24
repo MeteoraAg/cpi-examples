@@ -1,0 +1,2061 @@
+{
+  "address": "FEESngU3neckdwib9X3KWqdL7Mjmqk9XNp3uh5JbP4KP",
+  "metadata": {
+    "name": "stake_for_fee",
+    "version": "0.1.0",
+    "spec": "0.1.0"
+  },
+  "instructions": [
+    {
+      "name": "initialize_vault",
+      "discriminator": [48, 191, 163, 44, 71, 129, 63, 164],
+      "accounts": [
+        {
+          "name": "vault",
+          "docs": ["Vault account"],
+          "writable": true
+        },
+        {
+          "name": "stake_token_vault",
+          "docs": ["Token a vault"],
+          "writable": true
+        },
+        {
+          "name": "quote_token_vault",
+          "docs": ["Token b vault"],
+          "writable": true
+        },
+        {
+          "name": "top_staker_list",
+          "docs": ["Top staker list account"],
+          "writable": true
+        },
+        {
+          "name": "full_balance_list",
+          "docs": ["Full balance list account"],
+          "writable": true
+        },
+        {
+          "name": "pool",
+          "docs": ["Pool account"]
+        },
+        {
+          "name": "stake_mint",
+          "docs": ["Stake mint"]
+        },
+        {
+          "name": "quote_mint",
+          "docs": ["Quote mint"]
+        },
+        {
+          "name": "lock_escrow",
+          "docs": ["Escrow account"]
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "InitializeVaultParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize_stake_escrow",
+      "discriminator": [67, 237, 111, 110, 218, 214, 29, 153],
+      "accounts": [
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "escrow",
+          "writable": true
+        },
+        {
+          "name": "full_balance_list",
+          "writable": true
+        },
+        {
+          "name": "top_staker_list",
+          "writable": true
+        },
+        {
+          "name": "owner"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "stake",
+      "discriminator": [206, 176, 202, 18, 200, 209, 179, 108],
+      "accounts": [
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "stake_token_vault",
+          "writable": true
+        },
+        {
+          "name": "quote_token_vault",
+          "writable": true
+        },
+        {
+          "name": "top_staker_list",
+          "writable": true
+        },
+        {
+          "name": "full_balance_list",
+          "writable": true
+        },
+        {
+          "name": "stake_escrow",
+          "writable": true
+        },
+        {
+          "name": "smallest_stake_escrow",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "user_stake_token",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "signer": true
+        },
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "lp_mint",
+          "writable": true
+        },
+        {
+          "name": "lock_escrow",
+          "writable": true
+        },
+        {
+          "name": "escrow_vault",
+          "writable": true
+        },
+        {
+          "name": "a_token_vault",
+          "writable": true
+        },
+        {
+          "name": "b_token_vault",
+          "writable": true
+        },
+        {
+          "name": "a_vault",
+          "writable": true
+        },
+        {
+          "name": "b_vault",
+          "writable": true
+        },
+        {
+          "name": "a_vault_lp",
+          "writable": true
+        },
+        {
+          "name": "b_vault_lp",
+          "writable": true
+        },
+        {
+          "name": "a_vault_lp_mint",
+          "writable": true
+        },
+        {
+          "name": "b_vault_lp_mint",
+          "writable": true
+        },
+        {
+          "name": "amm_program"
+        },
+        {
+          "name": "vault_program"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "claim_fee",
+      "docs": [
+        "The endpoint will only claim the quote token (SOL or USDC). The meme token will be automatically restaked."
+      ],
+      "discriminator": [169, 32, 79, 137, 136, 232, 70, 137],
+      "accounts": [
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "top_staker_list",
+          "writable": true
+        },
+        {
+          "name": "full_balance_list",
+          "writable": true
+        },
+        {
+          "name": "stake_escrow",
+          "writable": true
+        },
+        {
+          "name": "smallest_stake_escrow",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "user_quote_token",
+          "writable": true
+        },
+        {
+          "name": "stake_token_vault",
+          "writable": true
+        },
+        {
+          "name": "quote_token_vault",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "signer": true
+        },
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "lp_mint",
+          "writable": true
+        },
+        {
+          "name": "lock_escrow",
+          "writable": true
+        },
+        {
+          "name": "escrow_vault",
+          "writable": true
+        },
+        {
+          "name": "a_token_vault",
+          "writable": true
+        },
+        {
+          "name": "b_token_vault",
+          "writable": true
+        },
+        {
+          "name": "a_vault",
+          "writable": true
+        },
+        {
+          "name": "b_vault",
+          "writable": true
+        },
+        {
+          "name": "a_vault_lp",
+          "writable": true
+        },
+        {
+          "name": "b_vault_lp",
+          "writable": true
+        },
+        {
+          "name": "a_vault_lp_mint",
+          "writable": true
+        },
+        {
+          "name": "b_vault_lp_mint",
+          "writable": true
+        },
+        {
+          "name": "amm_program"
+        },
+        {
+          "name": "vault_program"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "max_fee",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "request_unstake",
+      "discriminator": [44, 154, 110, 253, 160, 202, 54, 34],
+      "accounts": [
+        {
+          "name": "unstake",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "top_staker_list",
+          "writable": true
+        },
+        {
+          "name": "full_balance_list",
+          "writable": true
+        },
+        {
+          "name": "stake_escrow",
+          "writable": true
+        },
+        {
+          "name": "stake_token_vault",
+          "writable": true
+        },
+        {
+          "name": "quote_token_vault",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "lp_mint",
+          "writable": true
+        },
+        {
+          "name": "lock_escrow",
+          "writable": true
+        },
+        {
+          "name": "escrow_vault",
+          "writable": true
+        },
+        {
+          "name": "a_token_vault",
+          "writable": true
+        },
+        {
+          "name": "b_token_vault",
+          "writable": true
+        },
+        {
+          "name": "a_vault",
+          "writable": true
+        },
+        {
+          "name": "b_vault",
+          "writable": true
+        },
+        {
+          "name": "a_vault_lp",
+          "writable": true
+        },
+        {
+          "name": "b_vault_lp",
+          "writable": true
+        },
+        {
+          "name": "a_vault_lp_mint",
+          "writable": true
+        },
+        {
+          "name": "b_vault_lp_mint",
+          "writable": true
+        },
+        {
+          "name": "amm_program"
+        },
+        {
+          "name": "vault_program"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "unstake_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "cancel_unstake",
+      "discriminator": [64, 65, 53, 227, 125, 153, 3, 167],
+      "accounts": [
+        {
+          "name": "unstake",
+          "writable": true
+        },
+        {
+          "name": "stake_escrow",
+          "writable": true
+        },
+        {
+          "name": "smallest_stake_escrow",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "top_staker_list",
+          "writable": true
+        },
+        {
+          "name": "full_balance_list",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "stake_token_vault",
+          "writable": true
+        },
+        {
+          "name": "quote_token_vault",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "lp_mint",
+          "writable": true
+        },
+        {
+          "name": "lock_escrow",
+          "writable": true
+        },
+        {
+          "name": "escrow_vault",
+          "writable": true
+        },
+        {
+          "name": "a_token_vault",
+          "writable": true
+        },
+        {
+          "name": "b_token_vault",
+          "writable": true
+        },
+        {
+          "name": "a_vault",
+          "writable": true
+        },
+        {
+          "name": "b_vault",
+          "writable": true
+        },
+        {
+          "name": "a_vault_lp",
+          "writable": true
+        },
+        {
+          "name": "b_vault_lp",
+          "writable": true
+        },
+        {
+          "name": "a_vault_lp_mint",
+          "writable": true
+        },
+        {
+          "name": "b_vault_lp_mint",
+          "writable": true
+        },
+        {
+          "name": "amm_program"
+        },
+        {
+          "name": "vault_program"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdraw",
+      "discriminator": [183, 18, 70, 156, 148, 109, 161, 34],
+      "accounts": [
+        {
+          "name": "unstake",
+          "writable": true
+        },
+        {
+          "name": "stake_escrow",
+          "writable": true
+        },
+        {
+          "name": "stake_token_vault",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "user_stake_token",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim_fee_crank",
+      "discriminator": [202, 199, 147, 2, 255, 199, 1, 222],
+      "accounts": [
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "stake_token_vault",
+          "writable": true
+        },
+        {
+          "name": "quote_token_vault",
+          "writable": true
+        },
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "lp_mint",
+          "writable": true
+        },
+        {
+          "name": "lock_escrow",
+          "writable": true
+        },
+        {
+          "name": "escrow_vault",
+          "writable": true
+        },
+        {
+          "name": "a_token_vault",
+          "writable": true
+        },
+        {
+          "name": "b_token_vault",
+          "writable": true
+        },
+        {
+          "name": "a_vault",
+          "writable": true
+        },
+        {
+          "name": "b_vault",
+          "writable": true
+        },
+        {
+          "name": "a_vault_lp",
+          "writable": true
+        },
+        {
+          "name": "b_vault_lp",
+          "writable": true
+        },
+        {
+          "name": "a_vault_lp_mint",
+          "writable": true
+        },
+        {
+          "name": "b_vault_lp_mint",
+          "writable": true
+        },
+        {
+          "name": "amm_program"
+        },
+        {
+          "name": "vault_program"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_unstake_lock_duration",
+      "discriminator": [83, 195, 196, 224, 200, 81, 70, 96],
+      "accounts": [
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "unstake_lock_duration",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "update_seconds_to_full_unlock",
+      "discriminator": [22, 2, 54, 36, 74, 146, 7, 141],
+      "accounts": [
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "instructions_sysvar"
+        },
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "seconds_to_full_unlock",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "dummy",
+      "docs": [
+        "To force IDL generation for some struct for easier TS decoding later"
+      ],
+      "discriminator": [167, 117, 211, 79, 251, 254, 47, 135],
+      "accounts": [
+        {
+          "name": "staker_metadata"
+        },
+        {
+          "name": "staker_balance"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "StakerMetadataDummyAccount",
+      "discriminator": [164, 41, 91, 148, 225, 107, 235, 174]
+    },
+    {
+      "name": "StakerBalanceDummyAccount",
+      "discriminator": [27, 66, 207, 61, 128, 77, 48, 26]
+    },
+    {
+      "name": "FullBalanceListMetadata",
+      "discriminator": [169, 43, 13, 23, 89, 89, 173, 27]
+    },
+    {
+      "name": "StakeEscrow",
+      "discriminator": [115, 173, 53, 77, 43, 219, 85, 124]
+    },
+    {
+      "name": "TopListMetadata",
+      "discriminator": [129, 203, 39, 239, 234, 197, 215, 74]
+    },
+    {
+      "name": "Unstake",
+      "discriminator": [154, 148, 131, 67, 52, 244, 244, 19]
+    },
+    {
+      "name": "FeeVault",
+      "discriminator": [192, 178, 69, 232, 58, 149, 157, 132]
+    }
+  ],
+  "events": [
+    {
+      "name": "VaultCreated",
+      "discriminator": [117, 25, 120, 254, 75, 236, 78, 115]
+    },
+    {
+      "name": "StakeEscrowCreated",
+      "discriminator": [30, 193, 6, 249, 124, 123, 229, 152]
+    },
+    {
+      "name": "ConfigCreated",
+      "discriminator": [195, 73, 104, 161, 166, 245, 4, 120]
+    },
+    {
+      "name": "ConfigClosed",
+      "discriminator": [4, 138, 208, 218, 204, 236, 118, 199]
+    },
+    {
+      "name": "UnstakeCreated",
+      "discriminator": [8, 148, 18, 227, 107, 164, 235, 112]
+    },
+    {
+      "name": "CancelUnstakeSucceed",
+      "discriminator": [82, 107, 69, 158, 67, 109, 78, 147]
+    },
+    {
+      "name": "WithdrawSucceed",
+      "discriminator": [14, 37, 122, 205, 115, 39, 159, 28]
+    },
+    {
+      "name": "ClaimFeeSucceed",
+      "discriminator": [254, 25, 29, 83, 115, 189, 144, 18]
+    },
+    {
+      "name": "FeeEmission",
+      "discriminator": [109, 105, 68, 86, 142, 4, 115, 27]
+    },
+    {
+      "name": "AddNewUserToTopHolder",
+      "discriminator": [215, 17, 200, 127, 224, 180, 114, 200]
+    },
+    {
+      "name": "RemoveUserFromTopHolder",
+      "discriminator": [244, 213, 191, 20, 241, 134, 37, 235]
+    },
+    {
+      "name": "UserStake",
+      "discriminator": [195, 190, 70, 231, 232, 75, 51, 151]
+    },
+    {
+      "name": "ReclaimIndex",
+      "discriminator": [134, 152, 42, 196, 107, 132, 35, 222]
+    },
+    {
+      "name": "UpdateUnstakeLockDuration",
+      "discriminator": [117, 134, 16, 232, 145, 24, 175, 95]
+    },
+    {
+      "name": "UpdateSecondsToFullUnlock",
+      "discriminator": [82, 125, 66, 63, 78, 209, 125, 196]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidEscrowOwner",
+      "msg": "Escrow owner is not vault"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidTopListLength",
+      "msg": "Invalid top list length"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidSecondsToFullUnlock",
+      "msg": "Invalid seconds to full unlock"
+    },
+    {
+      "code": 6003,
+      "name": "MustHaveQuoteTokenOrInvalidStakeMint",
+      "msg": "Pool missing SOL/USDC token or invalid stake mint"
+    },
+    {
+      "code": 6004,
+      "name": "MissingDroppedStakeEscrow",
+      "msg": "Missing dropped stake escrow"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidStakeEscrow",
+      "msg": "Invalid stake escrow"
+    },
+    {
+      "code": 6006,
+      "name": "FullBalanceListFull",
+      "msg": "Full balance list is full"
+    },
+    {
+      "code": 6007,
+      "name": "MintDoesNotBelongToPool",
+      "msg": "Mint does not belong to the pool"
+    },
+    {
+      "code": 6008,
+      "name": "InsufficientStakeAmount",
+      "msg": "Insufficient stake amount"
+    },
+    {
+      "code": 6009,
+      "name": "CannotWithdrawUnstakeAmount",
+      "msg": "Unstake amount release date not reached"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidAdmin",
+      "msg": "Invalid admin"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidUnstakeLockDuration",
+      "msg": "Invalid unstake lock duration"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidJoinWindowDuration",
+      "msg": "Invalid join window duration"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidCustomStartFeeDistributeTimestamp",
+      "msg": "Invalid custom start fee distribute timestamp"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidSmallestStakeEscrow",
+      "msg": "Invalid smallest stake escrow"
+    },
+    {
+      "code": 6015,
+      "name": "MathOverflow",
+      "msg": "MathOverflow"
+    },
+    {
+      "code": 6016,
+      "name": "TypeCastFailed",
+      "msg": "Type casting failed"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidLockEscrowRelatedAccounts",
+      "msg": "Invalid lock escrow related accounts"
+    },
+    {
+      "code": 6018,
+      "name": "OnlyConstantProductPool",
+      "msg": "Only constant product pool is supported"
+    },
+    {
+      "code": 6019,
+      "name": "UndeterminedError",
+      "msg": "Undetermined error"
+    },
+    {
+      "code": 6020,
+      "name": "MissingSmallestStakeEscrow",
+      "msg": "Missing smallest stake escrow"
+    },
+    {
+      "code": 6021,
+      "name": "UpdatedValueIsTheSame",
+      "msg": "Updated value is the same as old value"
+    },
+    {
+      "code": 6022,
+      "name": "InvalidFeeCrankIx",
+      "msg": "Invalid fee crank instruction"
+    }
+  ],
+  "types": [
+    {
+      "name": "InitializeVaultParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "top_list_length",
+            "type": "u16"
+          },
+          {
+            "name": "seconds_to_full_unlock",
+            "type": "u64"
+          },
+          {
+            "name": "unstake_lock_duration",
+            "type": "u64"
+          },
+          {
+            "name": "start_fee_distribute_timestamp",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "padding",
+            "type": {
+              "array": ["u8", 64]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "StakerBalance",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "balance",
+            "docs": ["Balance"],
+            "type": "u64"
+          },
+          {
+            "name": "owner",
+            "docs": [
+              "Owner pubkey, we don't need this for logic, but it is useful for indexing"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "is_in_top_list",
+            "docs": ["In top list"],
+            "type": "u8"
+          },
+          {
+            "name": "padding",
+            "docs": ["Padding"],
+            "type": {
+              "array": ["u8", 7]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "StakerMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "stake_amount",
+            "docs": ["Staked amount"],
+            "type": "u64"
+          },
+          {
+            "name": "full_balance_index",
+            "docs": [
+              "Full balance list index. When it's negative, the slot is empty"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "owner",
+            "docs": [
+              "Owner pubkey, we dont need this for logic, but it is useful for indexing"
+            ],
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Configuration",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "seconds_to_full_unlock",
+            "docs": ["Time required for locked claim fee to be fully dripped"],
+            "type": "u64"
+          },
+          {
+            "name": "unstake_lock_duration",
+            "docs": ["Unstake lock duration"],
+            "type": "u64"
+          },
+          {
+            "name": "start_fee_distribute_timestamp",
+            "docs": ["When the fee start distributes"],
+            "type": "i64"
+          },
+          {
+            "name": "padding0",
+            "docs": ["padding 0"],
+            "type": "u64"
+          },
+          {
+            "name": "padding",
+            "docs": ["padding"],
+            "type": {
+              "array": ["u128", 4]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Metrics",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "total_staked_amount",
+            "docs": ["Total staked amount"],
+            "type": "u64"
+          },
+          {
+            "name": "total_stake_escrow_count",
+            "docs": ["Total stake escrow count"],
+            "type": "u64"
+          },
+          {
+            "name": "ongoing_total_partial_unstake_amount",
+            "docs": ["Ongoing total partial unstake amount"],
+            "type": "u64"
+          },
+          {
+            "name": "padding0",
+            "docs": ["padding 0"],
+            "type": "u64"
+          },
+          {
+            "name": "total_fee_a_amount",
+            "docs": ["Total claimed fee a amount"],
+            "type": "u128"
+          },
+          {
+            "name": "total_fee_b_amount",
+            "docs": ["Total claimed fee b amount"],
+            "type": "u128"
+          },
+          {
+            "name": "user_total_claimed_fee_a",
+            "docs": ["User total claimed fee a"],
+            "type": "u128"
+          },
+          {
+            "name": "user_total_claimed_fee_b",
+            "docs": ["User total claimed fee b"],
+            "type": "u128"
+          },
+          {
+            "name": "padding",
+            "docs": ["padding"],
+            "type": {
+              "array": ["u128", 4]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TopStakerInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "top_list_length",
+            "docs": ["Number of holder in the top list"],
+            "type": "u64"
+          },
+          {
+            "name": "current_length",
+            "docs": ["Current length, used for resize"],
+            "type": "u64"
+          },
+          {
+            "name": "effective_stake_amount",
+            "docs": [
+              "Effective stake amount. Total stake amount in the top list."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "last_claim_fee_at",
+            "docs": ["Last claim fee at"],
+            "type": "i64"
+          },
+          {
+            "name": "last_updated_at",
+            "docs": ["Last fee drip updated at"],
+            "type": "i64"
+          },
+          {
+            "name": "locked_fee_a",
+            "docs": ["Locked fee a"],
+            "type": "u64"
+          },
+          {
+            "name": "locked_fee_b",
+            "docs": ["Locked fee b"],
+            "type": "u64"
+          },
+          {
+            "name": "padding0",
+            "docs": ["Padding"],
+            "type": "u64"
+          },
+          {
+            "name": "cumulative_fee_a_per_liquidity",
+            "docs": ["cumulative fee a per liquidity"],
+            "type": "u128"
+          },
+          {
+            "name": "cumulative_fee_b_per_liquidity",
+            "docs": ["cumulative fee b per liquidity"],
+            "type": "u128"
+          },
+          {
+            "name": "padding",
+            "docs": ["padding"],
+            "type": {
+              "array": ["u128", 4]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Rounding",
+      "docs": ["Round up, down"],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Up"
+          },
+          {
+            "name": "Down"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StakerMetadataDummyAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "staker_metadata",
+            "type": {
+              "defined": {
+                "name": "StakerMetadata"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "StakerBalanceDummyAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "staker_balance",
+            "type": {
+              "defined": {
+                "name": "StakerBalance"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "FullBalanceListMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "length",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StakeEscrow",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "full_balance_index",
+            "type": "u64"
+          },
+          {
+            "name": "stake_amount",
+            "type": "u64"
+          },
+          {
+            "name": "in_top_list",
+            "type": "u8"
+          },
+          {
+            "name": "padding0",
+            "type": {
+              "array": ["u8", 15]
+            }
+          },
+          {
+            "name": "ongoing_total_partial_unstake_amount",
+            "type": "u64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "fee_a_claimed_amount",
+            "type": "u128"
+          },
+          {
+            "name": "fee_b_claimed_amount",
+            "type": "u128"
+          },
+          {
+            "name": "fee_a_per_liquidity_checkpoint",
+            "type": "u128"
+          },
+          {
+            "name": "fee_b_per_liquidity_checkpoint",
+            "type": "u128"
+          },
+          {
+            "name": "fee_a_pending",
+            "type": "u64"
+          },
+          {
+            "name": "fee_b_pending",
+            "type": "u64"
+          },
+          {
+            "name": "padding",
+            "type": {
+              "array": ["u128", 20]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TopListMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "vault",
+            "docs": ["Vault"],
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Unstake",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "stake_escrow",
+            "type": "pubkey"
+          },
+          {
+            "name": "unstake_amount",
+            "type": "u64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "release_at",
+            "type": "i64"
+          },
+          {
+            "name": "padding",
+            "type": {
+              "array": ["u64", 30]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeeVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lock_escrow",
+            "docs": ["Lock escrow account"],
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_mint",
+            "docs": ["Stake mint"],
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_mint",
+            "docs": ["Quote mint"],
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "docs": ["Pool"],
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_token_vault",
+            "docs": ["Stake token vault"],
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_token_vault",
+            "docs": ["Quote token vault"],
+            "type": "pubkey"
+          },
+          {
+            "name": "top_staker_list",
+            "docs": ["Top staker list"],
+            "type": "pubkey"
+          },
+          {
+            "name": "full_balance_list",
+            "docs": ["Full balance list"],
+            "type": "pubkey"
+          },
+          {
+            "name": "metrics",
+            "docs": ["Metrics"],
+            "type": {
+              "defined": {
+                "name": "Metrics"
+              }
+            }
+          },
+          {
+            "name": "configuration",
+            "docs": ["Configuration parameters"],
+            "type": {
+              "defined": {
+                "name": "Configuration"
+              }
+            }
+          },
+          {
+            "name": "top_staker_info",
+            "docs": ["Top staker info"],
+            "type": {
+              "defined": {
+                "name": "TopStakerInfo"
+              }
+            }
+          },
+          {
+            "name": "creator",
+            "docs": ["Creator"],
+            "type": "pubkey"
+          },
+          {
+            "name": "created_at",
+            "docs": ["Created at"],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": ["Bump"],
+            "type": "u8"
+          },
+          {
+            "name": "padding0",
+            "docs": ["Padding"],
+            "type": {
+              "array": ["u8", 7]
+            }
+          },
+          {
+            "name": "padding",
+            "docs": ["Padding"],
+            "type": {
+              "array": ["u128", 20]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "VaultCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_a_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_b_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "top_list_length",
+            "type": "u16"
+          },
+          {
+            "name": "seconds_to_full_unlock",
+            "type": "u64"
+          },
+          {
+            "name": "unstake_lock_duration",
+            "type": "u64"
+          },
+          {
+            "name": "start_fee_distribute_timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StakeEscrowCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "escrow",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "full_balance_index",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "index",
+            "type": "u64"
+          },
+          {
+            "name": "seconds_to_full_unlock",
+            "type": "u64"
+          },
+          {
+            "name": "unstake_lock_duration",
+            "type": "u64"
+          },
+          {
+            "name": "join_window_duration",
+            "type": "u64"
+          },
+          {
+            "name": "top_list_length",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigClosed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "index",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UnstakeCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "unstake",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "new_stake_escrow_amount",
+            "type": "u64"
+          },
+          {
+            "name": "new_stake_escrow_ongoing_total_unstake_amount",
+            "type": "u64"
+          },
+          {
+            "name": "fee_a_pending",
+            "type": "u64"
+          },
+          {
+            "name": "fee_b_pending",
+            "type": "u64"
+          },
+          {
+            "name": "fee_a_per_liquidity_checkpoint",
+            "type": "u128"
+          },
+          {
+            "name": "fee_b_per_liquidity_checkpoint",
+            "type": "u128"
+          },
+          {
+            "name": "start_at",
+            "type": "i64"
+          },
+          {
+            "name": "end_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CancelUnstakeSucceed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "unstake",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "new_stake_escrow_amount",
+            "type": "u64"
+          },
+          {
+            "name": "new_stake_escrow_ongoing_total_unstake_amount",
+            "type": "u64"
+          },
+          {
+            "name": "fee_a_pending",
+            "type": "u64"
+          },
+          {
+            "name": "fee_b_pending",
+            "type": "u64"
+          },
+          {
+            "name": "fee_a_per_liquidity_checkpoint",
+            "type": "u128"
+          },
+          {
+            "name": "fee_b_per_liquidity_checkpoint",
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WithdrawSucceed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "unstake",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "new_stake_escrow_ongoing_total_unstake_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClaimFeeSucceed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "stake_escrow",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_a_amount",
+            "type": "u64"
+          },
+          {
+            "name": "fee_b_amount",
+            "type": "u64"
+          },
+          {
+            "name": "total_fee_a_amount",
+            "type": "u128"
+          },
+          {
+            "name": "total_fee_b_amount",
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeeEmission",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_a_claimed",
+            "type": "u64"
+          },
+          {
+            "name": "token_b_claimed",
+            "type": "u64"
+          },
+          {
+            "name": "token_a_released",
+            "type": "u64"
+          },
+          {
+            "name": "token_b_released",
+            "type": "u64"
+          },
+          {
+            "name": "cumulative_fee_a_per_liquidity",
+            "type": "u128"
+          },
+          {
+            "name": "cumulative_fee_b_per_liquidity",
+            "type": "u128"
+          },
+          {
+            "name": "effective_stake_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AddNewUserToTopHolder",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_amount",
+            "type": "u64"
+          },
+          {
+            "name": "fee_a_pending",
+            "type": "u64"
+          },
+          {
+            "name": "fee_b_pending",
+            "type": "u64"
+          },
+          {
+            "name": "fee_a_per_liquidity_checkpoint",
+            "type": "u128"
+          },
+          {
+            "name": "fee_b_per_liquidity_checkpoint",
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveUserFromTopHolder",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_amount",
+            "type": "u64"
+          },
+          {
+            "name": "fee_a_pending",
+            "type": "u64"
+          },
+          {
+            "name": "fee_b_pending",
+            "type": "u64"
+          },
+          {
+            "name": "fee_a_per_liquidity_checkpoint",
+            "type": "u128"
+          },
+          {
+            "name": "fee_b_per_liquidity_checkpoint",
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserStake",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_amount",
+            "type": "u64"
+          },
+          {
+            "name": "total_stake_amount",
+            "type": "u64"
+          },
+          {
+            "name": "fee_a_pending",
+            "type": "u64"
+          },
+          {
+            "name": "fee_b_pending",
+            "type": "u64"
+          },
+          {
+            "name": "fee_a_per_liquidity_checkpoint",
+            "type": "u128"
+          },
+          {
+            "name": "fee_b_per_liquidity_checkpoint",
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReclaimIndex",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "in_owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "in_owner_balance",
+            "type": "u64"
+          },
+          {
+            "name": "out_owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "out_owner_balance",
+            "type": "u64"
+          },
+          {
+            "name": "reclaim_index",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateUnstakeLockDuration",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "old_value",
+            "type": "u64"
+          },
+          {
+            "name": "new_value",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateSecondsToFullUnlock",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "old_value",
+            "type": "u64"
+          },
+          {
+            "name": "new_value",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

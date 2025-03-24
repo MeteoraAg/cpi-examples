@@ -1,16 +1,14 @@
-mod helpers;
+use crate::helpers;
 use anchor_lang::{InstructionData, ToAccountMetas};
 use anchor_spl::associated_token::get_associated_token_address;
-use dynamic_amm::instructions::CustomizableParams;
-use dynamic_amm_common::dynamic_amm::ix_account_builder::IxAccountBuilder;
-use dynamic_amm_common::dynamic_amm::pda::derive_lock_escrow_key;
-use dynamic_amm_common::dynamic_amm::pda::METAPLEX_PROGRAM_ID;
+use cpi_example::dynamic_amm::types::CustomizableParams;
+use cpi_example::m3m3::types::InitializeVaultParams;
+use helpers::dynamic_amm_ix_account_builder::IxAccountBuilder;
+use helpers::dynamic_amm_pda::{derive_lock_escrow_key, METAPLEX_PROGRAM_ID};
 use helpers::dynamic_amm_utils::setup_vault_from_cluster;
 use helpers::process_and_assert_ok;
 use helpers::*;
-use m3m3::InitializeVaultParams;
-use m3m3_common::pda::*;
-
+use m3m3_pda::*;
 use solana_program_test::*;
 use solana_sdk::compute_budget::ComputeBudgetInstruction;
 use solana_sdk::instruction::Instruction;
@@ -22,17 +20,13 @@ use solana_sdk::{system_program, sysvar};
 async fn test_initialize_m3m3_vault() {
     let mock_user = Keypair::new();
 
-    let mut test = ProgramTest::new(
-        "cpi_example",
-        cpi_example::id(),
-        processor!(cpi_example::entry),
-    );
+    let mut test = setup_cpi_example_program();
     test.prefer_bpf(true);
 
-    test.add_program("dynamic_amm", dynamic_amm::ID, None);
-    test.add_program("dynamic_vault", dynamic_vault::ID, None);
+    test.add_program("dynamic_amm", cpi_example::dynamic_amm::ID, None);
+    test.add_program("dynamic_vault", cpi_example::dynamic_vault::ID, None);
     test.add_program("metaplex", METAPLEX_PROGRAM_ID, None);
-    test.add_program("m3m3", m3m3::ID, None);
+    test.add_program("m3m3", cpi_example::m3m3::ID, None);
 
     setup_vault_from_cluster(&mut test, JUP, mock_user.pubkey()).await;
     setup_vault_from_cluster(&mut test, USDC, mock_user.pubkey()).await;
@@ -71,10 +65,10 @@ async fn test_initialize_m3m3_vault() {
         rent: sysvar::rent::ID,
         metadata_program: METAPLEX_PROGRAM_ID,
         mint_metadata: init_pool_accounts.mint_metadata,
-        vault_program: dynamic_vault::ID,
+        vault_program: cpi_example::dynamic_vault::ID,
         associated_token_program: anchor_spl::associated_token::ID,
         system_program: system_program::ID,
-        dynamic_amm_program: dynamic_amm::ID,
+        dynamic_amm_program: cpi_example::dynamic_amm::ID,
     }
     .to_account_metas(None);
 
@@ -143,9 +137,9 @@ async fn test_initialize_m3m3_vault() {
         quote_mint: init_pool_accounts.token_b_mint,
         quote_token_vault,
         system_program: system_program::ID,
-        dynamic_amm_program: dynamic_amm::ID,
+        dynamic_amm_program: cpi_example::dynamic_amm::ID,
         associated_token_program: anchor_spl::associated_token::ID,
-        m3m3_program: m3m3::ID,
+        m3m3_program: cpi_example::m3m3::ID,
     }
     .to_account_metas(None);
 

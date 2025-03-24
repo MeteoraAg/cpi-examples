@@ -1,7 +1,7 @@
+use crate::helpers;
 use anchor_lang::{solana_program::pubkey::Pubkey, InstructionData, ToAccountMetas};
-mod helpers;
 use helpers::dynamic_amm_utils::{setup_pool_from_cluster, PoolSetupContext};
-use helpers::process_and_assert_ok;
+use helpers::{process_and_assert_ok, setup_cpi_example_program};
 use solana_program_test::*;
 use solana_sdk::{
     compute_budget::ComputeBudgetInstruction, instruction::Instruction, signature::Keypair,
@@ -14,15 +14,11 @@ const USDC_USDT_POOL: Pubkey = solana_sdk::pubkey!("32D4zRxNc1EssbJieVHfPhZM3rH6
 async fn test_dynamic_amm_swap() {
     let mock_user = Keypair::new();
 
-    let mut test = ProgramTest::new(
-        "cpi_example",
-        cpi_example::id(),
-        processor!(cpi_example::entry),
-    );
+    let mut test = setup_cpi_example_program();
     test.prefer_bpf(true);
 
-    test.add_program("dynamic_amm", dynamic_amm::ID, None);
-    test.add_program("dynamic_vault", dynamic_vault::ID, None);
+    test.add_program("dynamic_amm", cpi_example::dynamic_amm::ID, None);
+    test.add_program("dynamic_vault", cpi_example::dynamic_vault::ID, None);
 
     let PoolSetupContext {
         pool_state,
@@ -54,8 +50,8 @@ async fn test_dynamic_amm_swap() {
         user_source_token: user_token_a,
         user_destination_token: user_token_b,
         user: mock_user.pubkey(),
-        dynamic_amm_program: dynamic_amm::ID,
-        vault_program: dynamic_vault::ID,
+        dynamic_amm_program: cpi_example::dynamic_amm::ID,
+        vault_program: cpi_example::dynamic_vault::ID,
         token_program: anchor_spl::token::ID,
     }
     .to_account_metas(None);
