@@ -1,10 +1,11 @@
+use crate::dynamic_amm;
+use crate::dynamic_amm::types::CustomizableParams;
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::Transfer as NativeSolTransfer;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Mint, Token, TokenAccount, Transfer as TokenTransfer},
 };
-use dynamic_amm::instructions::CustomizableParams;
 
 pub const POOL_SIZE: usize = 8 + 944;
 
@@ -343,10 +344,7 @@ pub fn handle_initialize_customizable_permissionless_pool_with_pda_creator(
             system_program: ctx.accounts.system_program.to_account_info(),
         };
 
-    let seeds = [
-        b"creator".as_ref(),
-        &[*ctx.bumps.get("creator_authority").unwrap()],
-    ];
+    let seeds = [b"creator".as_ref(), &[ctx.bumps.creator_authority]];
 
     let signer_seeds = &[&seeds[..]];
 

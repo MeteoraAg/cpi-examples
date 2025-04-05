@@ -1,14 +1,15 @@
+use crate::dynamic_amm;
+use crate::dynamic_amm::accounts::Pool;
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::get_associated_token_address_with_program_id;
-use dynamic_amm::state::Pool;
 
 #[derive(Accounts)]
 pub struct DynamicAmmClaimFee<'info> {
-    /// Check: Pool account (PDA)
+    /// CHECK: Pool account (PDA)
     #[account(mut)]
     pub pool: UncheckedAccount<'info>,
 
-    /// Check: Pool LP mint
+    /// CHECK: Pool LP mint
     #[account(mut)]
     pub lp_mint: UncheckedAccount<'info>,
 
@@ -57,10 +58,10 @@ pub struct DynamicAmmClaimFee<'info> {
     pub b_vault_lp_mint: UncheckedAccount<'info>,
 
     #[account(mut)]
-    /// User token A account. Used to receive fee
+    /// CHECK: User token A account. Used to receive fee
     pub user_a_token: UncheckedAccount<'info>,
     #[account(mut)]
-    /// User token B account. Used to receive fee
+    /// CHECK: User token B account. Used to receive fee
     pub user_b_token: UncheckedAccount<'info>,
 
     /// CHECK: Token program
@@ -117,11 +118,11 @@ pub fn handle_claim_fee(ctx: Context<DynamicAmmClaimFee>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct DynamicAmmClaimFeePdaCreator<'info> {
-    /// Check: Pool account (PDA)
+    /// CHECK: Pool account (PDA)
     #[account(mut)]
     pub pool: Box<Account<'info, Pool>>,
 
-    /// Check: Pool LP mint
+    /// CHECK: Pool LP mint
     #[account(mut)]
     pub lp_mint: UncheckedAccount<'info>,
 
@@ -180,10 +181,10 @@ pub struct DynamicAmmClaimFeePdaCreator<'info> {
     pub b_vault_lp_mint: UncheckedAccount<'info>,
 
     #[account(mut)]
-    /// Creator token A account. Used to receive fee
+    /// CHECK: Creator token A account. Used to receive fee
     pub creator_a_token: UncheckedAccount<'info>,
     #[account(mut)]
-    /// Creator token B account. Used to receive fee
+    /// CHECK: Creator token B account. Used to receive fee
     pub creator_b_token: UncheckedAccount<'info>,
 
     /// CHECK: Token program
@@ -256,10 +257,7 @@ pub fn handle_claim_fee_pda_creator(ctx: Context<DynamicAmmClaimFeePdaCreator>) 
         b_token_vault: ctx.accounts.b_token_vault.to_account_info(),
     };
 
-    let seeds = [
-        b"creator".as_ref(),
-        &[*ctx.bumps.get("creator_authority").unwrap()],
-    ];
+    let seeds = [b"creator".as_ref(), &[ctx.bumps.creator_authority]];
 
     let signer_seeds = &[&seeds[..]];
 

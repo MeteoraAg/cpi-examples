@@ -1,10 +1,17 @@
+// https://github.com/coral-xyz/anchor/issues/3401#issuecomment-2513466441
+#![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
-
-use dynamic_amm::instructions::CustomizableParams as DynamicAmmCustomizableParams;
-use m3m3::InitializeVaultParams;
 
 pub mod instructions;
 pub use instructions::*;
+
+declare_program!(dlmm);
+declare_program!(dynamic_amm);
+declare_program!(dynamic_vault);
+declare_program!(m3m3);
+
+use crate::dlmm_swap::*;
+use crate::dynamic_amm_swap::*;
 
 fn assert_eq_admin(_key: Pubkey) -> bool {
     true
@@ -21,14 +28,14 @@ pub mod cpi_example {
         amount_in: u64,
         min_amount_out: u64,
     ) -> Result<()> {
-        instructions::dlmm_cpi::swap::handle_dlmm_swap(ctx, amount_in, min_amount_out)
+        instructions::dlmm_cpi::dlmm_swap::handle_dlmm_swap(ctx, amount_in, min_amount_out)
     }
 
     pub fn initialize_dynamic_amm_customizable_permissionless_pool(
         ctx: Context<DynamicAmmInitializeCustomizablePermissionlessPool>,
         token_a_amount: u64,
         token_b_amount: u64,
-        params: DynamicAmmCustomizableParams,
+        params: dynamic_amm::types::CustomizableParams,
     ) -> Result<()> {
         instructions::dynamic_amm_cpi::initialize_customizable_permissionless_pool::handle_initialize_customizable_permissionless_pool(
             ctx,
@@ -43,7 +50,7 @@ pub mod cpi_example {
         ctx: Context<DynamicAmmInitializeCustomizablePermissionlessPoolPdaCreator>,
         token_a_amount: u64,
         token_b_amount: u64,
-        params: DynamicAmmCustomizableParams,
+        params: dynamic_amm::types::CustomizableParams,
     ) -> Result<()> {
         instructions::dynamic_amm_cpi::initialize_customizable_permissionless_pool::handle_initialize_customizable_permissionless_pool_with_pda_creator(
             ctx, token_a_amount, token_b_amount, params
@@ -56,7 +63,7 @@ pub mod cpi_example {
         token_b_amount: u64,
         activation_point: Option<u64>,
     ) -> Result<()> {
-        instructions::dynamic_amm_cpi::initialize_permissionless_pool_with_config::handle_initialize_customizable_permissionless_pool_with_config(
+        instructions::dynamic_amm_cpi::initialize_permissionless_pool_with_config::handle_initialize_permissionless_pool_with_config(
             ctx,
             token_a_amount,
             token_b_amount,
@@ -71,7 +78,7 @@ pub mod cpi_example {
         token_b_amount: u64,
         activation_point: Option<u64>,
     ) -> Result<()> {
-        instructions::dynamic_amm_cpi::initialize_permissionless_pool_with_config::handle_initialize_customizable_permissionless_pool_with_pda_creator(
+        instructions::dynamic_amm_cpi::initialize_permissionless_pool_with_config::handle_initialize_permissionless_pool_with_pda_creator(
             ctx,
             token_a_amount,
             token_b_amount,
@@ -82,7 +89,7 @@ pub mod cpi_example {
     pub fn initialize_m3m3_vault(
         ctx: Context<InitializeM3m3Vault>,
         max_amount: u64,
-        vault_params: InitializeVaultParams,
+        vault_params: m3m3::types::InitializeVaultParams,
     ) -> Result<()> {
         instructions::m3m3_cpi::initialize_vault::handle_initialize_m3m3_vault(
             ctx,
@@ -96,7 +103,11 @@ pub mod cpi_example {
         amount_in: u64,
         min_amount_out: u64,
     ) -> Result<()> {
-        instructions::dynamic_amm_cpi::swap::handle_dynamic_amm_swap(ctx, amount_in, min_amount_out)
+        instructions::dynamic_amm_cpi::dynamic_amm_swap::handle_dynamic_amm_swap(
+            ctx,
+            amount_in,
+            min_amount_out,
+        )
     }
 
     pub fn dynamic_amm_lock_liquidity(

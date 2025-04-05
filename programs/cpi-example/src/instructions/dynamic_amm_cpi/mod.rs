@@ -1,5 +1,8 @@
-pub mod swap;
-pub use swap::*;
+mod swap;
+
+pub mod dynamic_amm_swap {
+    pub use super::swap::*;
+}
 
 pub mod initialize_customizable_permissionless_pool;
 pub use initialize_customizable_permissionless_pool::*;

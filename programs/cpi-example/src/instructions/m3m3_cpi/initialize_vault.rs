@@ -1,6 +1,8 @@
+use crate::dynamic_amm;
+use crate::m3m3;
+use crate::m3m3::types::InitializeVaultParams;
 use anchor_lang::prelude::*;
 use anchor_spl::token::TokenAccount;
-use m3m3::{InitializeVaultIxArgs, InitializeVaultParams};
 
 #[derive(Accounts)]
 pub struct InitializeM3m3Vault<'info> {
@@ -147,30 +149,24 @@ pub fn handle_initialize_m3m3_vault(
     dynamic_amm::cpi::lock(cpi_context, max_amount)?;
 
     // 3. Initialize m3m3 vault
-    let accounts = m3m3::InitializeVaultAccounts {
-        vault: &ctx.accounts.m3m3_vault,
-        stake_token_vault: &ctx.accounts.stake_token_vault,
-        quote_token_vault: &ctx.accounts.quote_token_vault,
-        top_staker_list: &ctx.accounts.top_staker_list,
-        full_balance_list: &ctx.accounts.full_balance_list,
-        stake_mint: &ctx.accounts.stake_mint,
-        quote_mint: &ctx.accounts.quote_mint,
-        system_program: &ctx.accounts.system_program,
-        pool: &ctx.accounts.pool,
-        event_authority: &ctx.accounts.m3m3_event_authority,
-        lock_escrow: &ctx.accounts.lock_escrow,
-        token_program: &ctx.accounts.token_program,
-        associated_token_program: &ctx.accounts.associated_token_program,
-        payer: &ctx.accounts.payer,
-        program: &ctx.accounts.m3m3_program,
+    let accounts = m3m3::cpi::accounts::InitializeVault {
+        vault: ctx.accounts.m3m3_vault.to_account_info(),
+        stake_token_vault: ctx.accounts.stake_token_vault.to_account_info(),
+        quote_token_vault: ctx.accounts.quote_token_vault.to_account_info(),
+        top_staker_list: ctx.accounts.top_staker_list.to_account_info(),
+        full_balance_list: ctx.accounts.full_balance_list.to_account_info(),
+        stake_mint: ctx.accounts.stake_mint.to_account_info(),
+        quote_mint: ctx.accounts.quote_mint.to_account_info(),
+        system_program: ctx.accounts.system_program.to_account_info(),
+        pool: ctx.accounts.pool.to_account_info(),
+        event_authority: ctx.accounts.m3m3_event_authority.to_account_info(),
+        lock_escrow: ctx.accounts.lock_escrow.to_account_info(),
+        token_program: ctx.accounts.token_program.to_account_info(),
+        associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
+        payer: ctx.accounts.payer.to_account_info(),
+        program: ctx.accounts.m3m3_program.to_account_info(),
     };
 
-    m3m3::initialize_vault_invoke(
-        accounts,
-        InitializeVaultIxArgs {
-            params: vault_params,
-        },
-    )?;
-
-    Ok(())
+    let cpi_context = CpiContext::new(ctx.accounts.m3m3_program.to_account_info(), accounts);
+    m3m3::cpi::initialize_vault(cpi_context, vault_params)
 }

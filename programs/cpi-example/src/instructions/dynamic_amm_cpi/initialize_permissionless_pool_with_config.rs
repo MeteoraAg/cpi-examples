@@ -1,12 +1,10 @@
+use crate::dynamic_amm;
+use crate::{fund_creator_authority, FundCreatorAuthorityAccounts};
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Token, TokenAccount},
 };
-
-use crate::{fund_creator_authority, FundCreatorAuthorityAccounts};
-
-pub const POOL_SIZE: usize = 8 + 944;
 
 #[derive(Accounts)]
 pub struct DynamicAmmInitializePermissionlessPoolWithConfig<'info> {
@@ -119,14 +117,14 @@ pub struct DynamicAmmInitializePermissionlessPoolWithConfig<'info> {
 /// # Returns
 ///
 /// Returns a `Result` indicating success or failure.
-pub fn handle_initialize_customizable_permissionless_pool_with_config(
+pub fn handle_initialize_permissionless_pool_with_config(
     ctx: Context<DynamicAmmInitializePermissionlessPoolWithConfig>,
     token_a_amount: u64,
     token_b_amount: u64,
     activation_point: Option<u64>,
 ) -> Result<()> {
     let accounts =
-        dynamic_amm::cpi::accounts::InitializePermissionlessConstantProductPoolWithConfig {
+        dynamic_amm::cpi::accounts::InitializePermissionlessConstantProductPoolWithConfig2 {
             pool: ctx.accounts.pool.to_account_info(),
             token_a_mint: ctx.accounts.token_a_mint.to_account_info(),
             token_b_mint: ctx.accounts.token_b_mint.to_account_info(),
@@ -301,7 +299,7 @@ pub struct DynamicAmmInitializePermissionlessPoolWithConfigPdaCreator<'info> {
 /// # Returns
 ///
 /// Returns a `Result` indicating success or failure.
-pub fn handle_initialize_customizable_permissionless_pool_with_pda_creator(
+pub fn handle_initialize_permissionless_pool_with_pda_creator(
     ctx: Context<DynamicAmmInitializePermissionlessPoolWithConfigPdaCreator>,
     token_a_amount: u64,
     token_b_amount: u64,
@@ -323,7 +321,7 @@ pub fn handle_initialize_customizable_permissionless_pool_with_pda_creator(
     )?;
 
     let accounts =
-        dynamic_amm::cpi::accounts::InitializePermissionlessConstantProductPoolWithConfig {
+        dynamic_amm::cpi::accounts::InitializePermissionlessConstantProductPoolWithConfig2 {
             pool: ctx.accounts.pool.to_account_info(),
             token_a_mint: ctx.accounts.token_a_mint.to_account_info(),
             token_b_mint: ctx.accounts.token_b_mint.to_account_info(),
@@ -352,10 +350,7 @@ pub fn handle_initialize_customizable_permissionless_pool_with_pda_creator(
             config: ctx.accounts.config.to_account_info(),
         };
 
-    let seeds = [
-        b"creator".as_ref(),
-        &[*ctx.bumps.get("creator_authority").unwrap()],
-    ];
+    let seeds = [b"creator".as_ref(), &[ctx.bumps.creator_authority]];
 
     let signer_seeds = &[&seeds[..]];
 

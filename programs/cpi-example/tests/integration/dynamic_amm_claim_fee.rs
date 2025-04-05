@@ -1,9 +1,12 @@
-mod helpers;
+use crate::helpers;
+use anchor_lang::AccountDeserialize;
 use anchor_lang::{InstructionData, ToAccountMetas};
 use anchor_spl::associated_token::get_associated_token_address;
-use dynamic_amm::instructions::CustomizableParams;
-use dynamic_amm_common::dynamic_amm::ix_account_builder::IxAccountBuilder;
-use dynamic_amm_common::dynamic_amm::pda::{derive_lock_escrow_key, METAPLEX_PROGRAM_ID};
+use cpi_example::dynamic_amm::accounts::Pool;
+use cpi_example::dynamic_amm::types::CustomizableParams;
+use cpi_example::dynamic_vault::accounts::Vault;
+use helpers::dynamic_amm_ix_account_builder::IxAccountBuilder;
+use helpers::dynamic_amm_pda::{derive_lock_escrow_key, METAPLEX_PROGRAM_ID};
 use helpers::dynamic_amm_utils::setup_vault_from_cluster;
 use helpers::process_and_assert_ok;
 use helpers::*;
@@ -15,19 +18,81 @@ use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
 use solana_sdk::{system_program, sysvar};
 
+async fn generate_swap_fees(banks_client: &mut BanksClient, pool: Pubkey, user: &Keypair) {
+    let pool_account = banks_client.get_account(pool).await.unwrap().unwrap();
+    let pool_state = Pool::try_deserialize(&mut pool_account.data.as_ref()).unwrap();
+
+    let a_vault_account = banks_client
+        .get_account(pool_state.a_vault)
+        .await
+        .unwrap()
+        .unwrap();
+    let a_vault_state = Vault::try_deserialize(&mut a_vault_account.data.as_ref()).unwrap();
+
+    let b_vault_account = banks_client
+        .get_account(pool_state.b_vault)
+        .await
+        .unwrap()
+        .unwrap();
+    let b_vault_state = Vault::try_deserialize(&mut b_vault_account.data.as_ref()).unwrap();
+
+    for (in_token, out_token) in [
+        (pool_state.token_a_mint, pool_state.token_b_mint),
+        (pool_state.token_b_mint, pool_state.token_a_mint),
+    ] {
+        let in_token_ata = get_associated_token_address(&user.pubkey(), &in_token);
+        let out_token_ata = get_associated_token_address(&user.pubkey(), &out_token);
+
+        let protocol_token_fee = if in_token.eq(&pool_state.token_a_mint) {
+            pool_state.protocol_token_a_fee
+        } else {
+            pool_state.protocol_token_b_fee
+        };
+
+        let accounts = cpi_example::dynamic_amm::client::accounts::Swap {
+            pool,
+            user_source_token: in_token_ata,
+            user_destination_token: out_token_ata,
+            a_vault: pool_state.a_vault,
+            b_vault: pool_state.b_vault,
+            a_token_vault: a_vault_state.token_vault,
+            b_token_vault: b_vault_state.token_vault,
+            a_vault_lp: pool_state.a_vault_lp,
+            b_vault_lp: pool_state.b_vault_lp,
+            a_vault_lp_mint: a_vault_state.lp_mint,
+            b_vault_lp_mint: b_vault_state.lp_mint,
+            token_program: anchor_spl::token::ID,
+            protocol_token_fee,
+            user: user.pubkey(),
+            vault_program: cpi_example::dynamic_vault::ID,
+        }
+        .to_account_metas(None);
+
+        let ix_data = cpi_example::dynamic_amm::client::args::Swap {
+            in_amount: 1_000_000,
+            minimum_out_amount: 0,
+        }
+        .data();
+
+        let instruction = Instruction {
+            program_id: cpi_example::dynamic_amm::ID,
+            accounts,
+            data: ix_data,
+        };
+
+        process_and_assert_ok(&[instruction], user, &[&user], banks_client).await;
+    }
+}
+
 #[tokio::test]
-async fn test_lock_liquidity_pda_creator() {
+async fn test_claim_fee_pda_creator() {
     let mock_user = Keypair::new();
 
-    let mut test = ProgramTest::new(
-        "cpi_example",
-        cpi_example::id(),
-        processor!(cpi_example::entry),
-    );
+    let mut test = setup_cpi_example_program();
     test.prefer_bpf(true);
 
-    test.add_program("dynamic_amm", dynamic_amm::ID, None);
-    test.add_program("dynamic_vault", dynamic_vault::ID, None);
+    test.add_program("dynamic_amm", cpi_example::dynamic_amm::ID, None);
+    test.add_program("dynamic_vault", cpi_example::dynamic_vault::ID, None);
     test.add_program("metaplex", METAPLEX_PROGRAM_ID, None);
 
     setup_vault_from_cluster(&mut test, JUP, mock_user.pubkey()).await;
@@ -75,10 +140,10 @@ async fn test_lock_liquidity_pda_creator() {
             rent: sysvar::rent::ID,
             metadata_program: METAPLEX_PROGRAM_ID,
             mint_metadata: init_pool_accounts.mint_metadata,
-            vault_program: dynamic_vault::ID,
+            vault_program: cpi_example::dynamic_vault::ID,
             associated_token_program: anchor_spl::associated_token::ID,
             system_program: system_program::ID,
-            dynamic_amm_program: dynamic_amm::ID,
+            dynamic_amm_program: cpi_example::dynamic_amm::ID,
         }
         .to_account_metas(None);
 
@@ -141,7 +206,7 @@ async fn test_lock_liquidity_pda_creator() {
         b_vault_lp: init_pool_accounts.b_vault_lp,
         a_vault_lp_mint: init_pool_accounts.a_vault_lp_mint,
         b_vault_lp_mint: init_pool_accounts.b_vault_lp_mint,
-        dynamic_amm_program: dynamic_amm::ID,
+        dynamic_amm_program: cpi_example::dynamic_amm::ID,
         system_program: system_program::ID,
         token_program: anchor_spl::token::ID,
         associated_token_program: anchor_spl::associated_token::ID,
@@ -157,31 +222,55 @@ async fn test_lock_liquidity_pda_creator() {
         data: ix_data,
     };
 
-    process_and_assert_ok(
-        &[
-            ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
-            instruction,
-        ],
-        &mock_user,
-        &[&mock_user],
-        &mut banks_client,
-    )
-    .await;
+    process_and_assert_ok(&[instruction], &mock_user, &[&mock_user], &mut banks_client).await;
+
+    // 3. Generate some swap fee
+    generate_swap_fees(&mut banks_client, init_pool_accounts.pool, &mock_user).await;
+
+    // 4. Claim fee
+    let accounts = cpi_example::accounts::DynamicAmmClaimFeePdaCreator {
+        pool: init_pool_accounts.pool,
+        lp_mint: init_pool_accounts.lp_mint,
+        creator_authority,
+        lock_escrow: lock_escrow_creator,
+        escrow_vault: escrow_vault_creator,
+        a_token_vault: init_pool_accounts.a_token_vault,
+        b_token_vault: init_pool_accounts.b_token_vault,
+        cpi_example_admin: mock_user.pubkey(),
+        a_vault: init_pool_accounts.a_vault,
+        b_vault: init_pool_accounts.b_vault,
+        a_vault_lp: init_pool_accounts.a_vault_lp,
+        b_vault_lp: init_pool_accounts.b_vault_lp,
+        a_vault_lp_mint: init_pool_accounts.a_vault_lp_mint,
+        b_vault_lp_mint: init_pool_accounts.b_vault_lp_mint,
+        creator_a_token: init_pool_accounts.payer_token_a,
+        creator_b_token: init_pool_accounts.payer_token_b,
+        token_program: anchor_spl::token::ID,
+        dynamic_amm: cpi_example::dynamic_amm::ID,
+        dynamic_vault: cpi_example::dynamic_vault::ID,
+    }
+    .to_account_metas(None);
+
+    let ix_data = cpi_example::instruction::DynamicAmmClaimFeePdaCreator {}.data();
+
+    let instruction = Instruction {
+        program_id: cpi_example::ID,
+        accounts,
+        data: ix_data,
+    };
+
+    process_and_assert_ok(&[instruction], &mock_user, &[&mock_user], &mut banks_client).await;
 }
 
 #[tokio::test]
-async fn test_lock_liquidity() {
+async fn test_claim_fee() {
     let mock_user = Keypair::new();
 
-    let mut test = ProgramTest::new(
-        "cpi_example",
-        cpi_example::id(),
-        processor!(cpi_example::entry),
-    );
+    let mut test = setup_cpi_example_program();
     test.prefer_bpf(true);
 
-    test.add_program("dynamic_amm", dynamic_amm::ID, None);
-    test.add_program("dynamic_vault", dynamic_vault::ID, None);
+    test.add_program("dynamic_amm", cpi_example::dynamic_amm::ID, None);
+    test.add_program("dynamic_vault", cpi_example::dynamic_vault::ID, None);
     test.add_program("metaplex", METAPLEX_PROGRAM_ID, None);
 
     setup_vault_from_cluster(&mut test, JUP, mock_user.pubkey()).await;
@@ -220,10 +309,10 @@ async fn test_lock_liquidity() {
         rent: sysvar::rent::ID,
         metadata_program: METAPLEX_PROGRAM_ID,
         mint_metadata: init_pool_accounts.mint_metadata,
-        vault_program: dynamic_vault::ID,
+        vault_program: cpi_example::dynamic_vault::ID,
         associated_token_program: anchor_spl::associated_token::ID,
         system_program: system_program::ID,
-        dynamic_amm_program: dynamic_amm::ID,
+        dynamic_amm_program: cpi_example::dynamic_amm::ID,
     }
     .to_account_metas(None);
 
@@ -287,7 +376,7 @@ async fn test_lock_liquidity() {
         b_vault_lp: init_pool_accounts.b_vault_lp,
         a_vault_lp_mint: init_pool_accounts.a_vault_lp_mint,
         b_vault_lp_mint: init_pool_accounts.b_vault_lp_mint,
-        dynamic_amm_program: dynamic_amm::ID,
+        dynamic_amm_program: cpi_example::dynamic_amm::ID,
         system_program: system_program::ID,
         token_program: anchor_spl::token::ID,
         associated_token_program: anchor_spl::associated_token::ID,
@@ -302,14 +391,74 @@ async fn test_lock_liquidity() {
         data: ix_data,
     };
 
-    process_and_assert_ok(
-        &[
-            ComputeBudgetInstruction::set_compute_unit_limit(1_400_000),
-            instruction,
-        ],
-        &mock_user,
-        &[&mock_user],
-        &mut banks_client,
-    )
-    .await;
+    process_and_assert_ok(&[instruction], &mock_user, &[&mock_user], &mut banks_client).await;
+
+    // 3. Generate some swap fees
+    generate_swap_fees(&mut banks_client, init_pool_accounts.pool, &mock_user).await;
+
+    // 4. Claim fee for user 0 + 1
+    for user in [&mock_user, &user_1_kp] {
+        let lock_escrow = derive_lock_escrow_key(init_pool_accounts.pool, user.pubkey());
+        let escrow_vault = get_associated_token_address(&lock_escrow, &init_pool_accounts.lp_mint);
+
+        let user_token_a =
+            get_associated_token_address(&user.pubkey(), &init_pool_accounts.token_a_mint);
+
+        let user_token_b =
+            get_associated_token_address(&user.pubkey(), &init_pool_accounts.token_b_mint);
+
+        let init_user_token_a_ix =
+            spl_associated_token_account::instruction::create_associated_token_account_idempotent(
+                &mock_user.pubkey(),
+                &user.pubkey(),
+                &init_pool_accounts.token_a_mint,
+                &anchor_spl::token::ID,
+            );
+
+        let init_user_token_b_ix =
+            spl_associated_token_account::instruction::create_associated_token_account_idempotent(
+                &mock_user.pubkey(),
+                &user.pubkey(),
+                &init_pool_accounts.token_b_mint,
+                &anchor_spl::token::ID,
+            );
+
+        let accounts = cpi_example::accounts::DynamicAmmClaimFee {
+            pool: init_pool_accounts.pool,
+            a_vault: init_pool_accounts.a_vault,
+            b_vault: init_pool_accounts.b_vault,
+            a_vault_lp: init_pool_accounts.a_vault_lp,
+            b_vault_lp: init_pool_accounts.b_vault_lp,
+            a_token_vault: init_pool_accounts.a_token_vault,
+            b_token_vault: init_pool_accounts.b_token_vault,
+            a_vault_lp_mint: init_pool_accounts.a_vault_lp_mint,
+            b_vault_lp_mint: init_pool_accounts.b_vault_lp_mint,
+            lock_escrow,
+            escrow_vault,
+            lp_mint: init_pool_accounts.lp_mint,
+            owner: user.pubkey(),
+            user_a_token: user_token_a,
+            user_b_token: user_token_b,
+            dynamic_amm: cpi_example::dynamic_amm::ID,
+            dynamic_vault: cpi_example::dynamic_vault::ID,
+            token_program: anchor_spl::token::ID,
+        }
+        .to_account_metas(None);
+
+        let ix_data = cpi_example::instruction::DynamicAmmClaimFee {}.data();
+
+        let instruction = Instruction {
+            program_id: cpi_example::ID,
+            accounts,
+            data: ix_data,
+        };
+
+        process_and_assert_ok(
+            &[init_user_token_a_ix, init_user_token_b_ix, instruction],
+            &mock_user,
+            &[&mock_user, &user],
+            &mut banks_client,
+        )
+        .await;
+    }
 }

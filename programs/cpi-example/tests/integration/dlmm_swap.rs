@@ -1,9 +1,9 @@
+use crate::helpers;
 use anchor_lang::{solana_program::pubkey::Pubkey, InstructionData, ToAccountMetas};
-mod helpers;
-use dlmm::state::bin::BinArray;
-use dlmm::utils::pda::derive_bin_array_pda;
-use helpers::dlmm_utils::{setup_pool_from_cluster, PoolSetupContext};
-use helpers::process_and_assert_ok;
+use cpi_example::dlmm;
+use helpers::dlmm_pda::*;
+use helpers::dlmm_utils::*;
+use helpers::{process_and_assert_ok, setup_cpi_example_program};
 use solana_program_test::*;
 use solana_sdk::instruction::AccountMeta;
 use solana_sdk::{
@@ -17,11 +17,7 @@ const USDC_USDT_POOL: Pubkey = solana_sdk::pubkey!("ARwi1S4DaiTG5DX7S4M4ZsrXqpMD
 async fn test_dlmm_swap() {
     let mock_user = Keypair::new();
 
-    let mut test = ProgramTest::new(
-        "cpi_example",
-        cpi_example::id(),
-        processor!(cpi_example::entry),
-    );
+    let mut test = setup_cpi_example_program();
 
     test.prefer_bpf(true);
     test.add_program("dlmm", dlmm::ID, None);
@@ -53,7 +49,7 @@ async fn test_dlmm_swap() {
         host_fee_in: None,
         user: mock_user.pubkey(),
         dlmm_program: dlmm::ID,
-        event_authority: dlmm::utils::pda::derive_event_authority_pda().0,
+        event_authority: derive_event_authority_pda().0,
         token_x_program: anchor_spl::token::ID,
         token_y_program: anchor_spl::token::ID,
     }
@@ -61,7 +57,7 @@ async fn test_dlmm_swap() {
 
     let (active_bin_array_key, _bump) = derive_bin_array_pda(
         USDC_USDT_POOL,
-        BinArray::bin_id_to_bin_array_index(pool_state.active_id)
+        bin_id_to_bin_array_index(pool_state.active_id)
             .unwrap()
             .into(),
     );

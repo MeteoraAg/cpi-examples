@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, TokenAccount};
-use dynamic_amm::state::Pool;
+use crate::dynamic_amm::accounts::Pool;
+use crate::dynamic_amm;
 
 #[derive(Accounts)]
 pub struct DynamicAmmLockLiquidity<'info> {
@@ -358,7 +359,7 @@ pub fn handle_lock_liquidity_pda_creator(
 
     let seeds = [
         b"creator".as_ref(),
-        &[*ctx.bumps.get("creator_authority").unwrap()],
+        &[ctx.bumps.creator_authority]
     ];
 
     let signer_seeds = &[&seeds[..]];
