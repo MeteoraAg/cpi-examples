@@ -5,6 +5,8 @@ use anchor_lang::prelude::*;
 pub mod instructions;
 pub use instructions::*;
 
+mod utils;
+
 declare_program!(dlmm);
 declare_program!(dynamic_amm);
 declare_program!(dynamic_vault);
@@ -29,6 +31,18 @@ pub mod cpi_example {
         min_amount_out: u64,
     ) -> Result<()> {
         instructions::dlmm_cpi::dlmm_swap::handle_dlmm_swap(ctx, amount_in, min_amount_out)
+    }
+
+    pub fn dlmm_swap_with_pda_authority<'a, 'b, 'c, 'info>(
+        ctx: Context<'a, 'b, 'c, 'info, DlmmSwapWithPdaAuthority<'info>>,
+        amount_in: u64,
+        min_amount_out: u64,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::dlmm_swap::handle_dlmm_swap_with_pda_authority(
+            ctx,
+            amount_in,
+            min_amount_out,
+        )
     }
 
     pub fn initialize_dynamic_amm_customizable_permissionless_pool(

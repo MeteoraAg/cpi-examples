@@ -13,5 +13,5 @@ cluster = "Localnet"
 wallet = "~/.config/solana/id.json"
 
 [toolchain]
-anchor_version = "0.31.0"
+anchor_version = "0.31.1"
 solana_version = "2.1.0"
