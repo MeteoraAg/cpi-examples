@@ -18,7 +18,25 @@ pub const PRESET_PARAMETER: &[u8] = b"preset_parameter";
 #[constant]
 pub const POSITION: &[u8] = b"position";
 
+#[constant]
+pub const TOKEN_BADGE: &[u8] = b"token_badge";
+
 pub const ILM_BASE_KEY: Pubkey = pubkey!("MFGQxwAmB91SwuYX36okv2Qmdc9aMuHTwWGUrp4AtB1");
+
+pub fn derive_lb_pair_pda_with_config(
+    preset_parameter: Pubkey,
+    token_x_mint: Pubkey,
+    token_y_mint: Pubkey,
+) -> (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[
+            preset_parameter.as_ref(),
+            min(token_x_mint.as_ref(), token_y_mint.as_ref()),
+            max(token_x_mint.as_ref(), token_y_mint.as_ref()),
+        ],
+        &cpi_example::dlmm::ID,
+    )
+}
 
 pub fn derive_lb_pair_pda2(
     token_x_mint: Pubkey,
@@ -155,4 +173,8 @@ pub fn derive_preset_parameter_pda2(bin_step: u16, base_factor: u16) -> (Pubkey,
         ],
         &cpi_example::dlmm::ID,
     )
+}
+
+pub fn derive_token_badge_pda(mint: Pubkey) -> (Pubkey, u8) {
+    Pubkey::find_program_address(&[TOKEN_BADGE, mint.as_ref()], &cpi_example::dlmm::ID)
 }

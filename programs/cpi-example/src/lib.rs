@@ -25,6 +25,20 @@ declare_id!("4JTNRRQpgLusbEhGnzTuE9kgPgMLXQX1wqBzU52GduqH");
 pub mod cpi_example {
     use super::*;
 
+    pub fn initialize_lb_pair(
+        ctx: Context<InitializeLbPair>,
+        params: dlmm::types::InitializeLbPair2Params,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::handle_initialize_lb_pair(ctx, params)
+    }
+
+    pub fn initialize_lb_pair_with_pda_creator(
+        ctx: Context<InitializeLbPairWithPdaCreator>,
+        params: dlmm::types::InitializeLbPair2Params,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::handle_initialize_lb_pair_with_pda_creator(ctx, params)
+    }
+
     pub fn dlmm_swap<'a, 'b, 'c, 'info>(
         ctx: Context<'a, 'b, 'c, 'info, DlmmSwap<'info>>,
         amount_in: u64,

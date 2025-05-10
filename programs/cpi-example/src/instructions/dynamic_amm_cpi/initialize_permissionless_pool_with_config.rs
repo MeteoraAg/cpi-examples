@@ -1,10 +1,11 @@
 use crate::dynamic_amm;
-use crate::{fund_creator_authority, FundCreatorAuthorityAccounts};
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Token, TokenAccount},
 };
+
+use super::utils::{fund_creator_authority, FundCreatorAuthorityAccounts};
 
 #[derive(Accounts)]
 pub struct DynamicAmmInitializePermissionlessPoolWithConfig<'info> {
