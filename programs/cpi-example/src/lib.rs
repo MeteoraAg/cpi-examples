@@ -32,11 +32,44 @@ pub mod cpi_example {
         instructions::dlmm_cpi::handle_initialize_lb_pair(ctx, params)
     }
 
+    // NOTE: Pool creator will be PDA
     pub fn initialize_lb_pair_with_pda_creator(
         ctx: Context<InitializeLbPairWithPdaCreator>,
         params: dlmm::types::InitializeLbPair2Params,
     ) -> Result<()> {
         instructions::dlmm_cpi::handle_initialize_lb_pair_with_pda_creator(ctx, params)
+    }
+
+    pub fn initialize_position(
+        ctx: Context<InitializePosition>,
+        lower_bin_id: i32,
+        width: i32,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::handle_initialize_position(ctx, lower_bin_id, width)
+    }
+
+    // NOTE: Position owner will be PDA
+    pub fn initialize_position_with_pda_owner(
+        ctx: Context<InitializePositionWithPdaOwner>,
+        lower_bin_id: i32,
+        width: i32,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::handle_initialize_position_with_pda_owner(ctx, lower_bin_id, width)
+    }
+
+    // NOTE: Position and position's owner will be PDA
+    pub fn initialize_pda_position_with_pda_owner(
+        ctx: Context<InitializePdaPositionWithPdaOwner>,
+        index: i64,
+        lower_bin_id: i32,
+        width: i32,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::handle_initialize_pda_position_with_pda_owner(
+            ctx,
+            index,
+            lower_bin_id,
+            width,
+        )
     }
 
     pub fn dlmm_swap<'a, 'b, 'c, 'info>(

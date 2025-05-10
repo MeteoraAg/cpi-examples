@@ -1,6 +1,7 @@
 mod helpers;
 
 mod dlmm_initialize_lb_pair;
+mod dlmm_initialize_position;
 mod dlmm_swap;
 mod dynamic_amm_claim_fee;
 mod dynamic_amm_init_pool;

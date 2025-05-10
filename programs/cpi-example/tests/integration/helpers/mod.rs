@@ -15,6 +15,7 @@ mod dynamic_vault_aux_lp_mint;
 
 mod utils;
 
+pub use utils::deserialize_zc_unalignment;
 pub use utils::process_and_assert_ok;
 const RPC: &str = "https://api.mainnet-beta.solana.com";
 
