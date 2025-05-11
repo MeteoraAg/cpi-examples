@@ -151,6 +151,7 @@ async fn test_dlmm_initialize_lb_pair_with_pda_creator() {
 
     let ix_data = cpi_example::instruction::InitializeLbPairWithPdaCreator {
         params: InitializeLbPair2Params {
+            // See: https://github.com/MeteoraAg/dlmm-sdk/blob/e00b46ed85c71927e1cb9554d1cfe636dd440e04/ts-client/src/dlmm/index.ts#L1172 on how to convert price to bin id
             active_id: 0,
             padding: [0u8; 96],
         },

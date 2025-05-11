@@ -1,5 +1,6 @@
 mod helpers;
 
+mod dlmm_deposit;
 mod dlmm_initialize_lb_pair;
 mod dlmm_initialize_position;
 mod dlmm_swap;

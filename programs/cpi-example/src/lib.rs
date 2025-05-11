@@ -12,6 +12,9 @@ declare_program!(dynamic_amm);
 declare_program!(dynamic_vault);
 declare_program!(m3m3);
 
+use crate::dlmm::types::*;
+
+use crate::dlmm_deposit::*;
 use crate::dlmm_swap::*;
 use crate::dynamic_amm_swap::*;
 
@@ -40,8 +43,8 @@ pub mod cpi_example {
         instructions::dlmm_cpi::handle_initialize_lb_pair_with_pda_creator(ctx, params)
     }
 
-    pub fn initialize_position(
-        ctx: Context<InitializePosition>,
+    pub fn initialize_dlmm_position(
+        ctx: Context<InitializeDlmmPosition>,
         lower_bin_id: i32,
         width: i32,
     ) -> Result<()> {
@@ -49,8 +52,8 @@ pub mod cpi_example {
     }
 
     // NOTE: Position owner will be PDA
-    pub fn initialize_position_with_pda_owner(
-        ctx: Context<InitializePositionWithPdaOwner>,
+    pub fn initialize_dlmm_position_with_pda_owner(
+        ctx: Context<InitializeDlmmPositionWithPdaOwner>,
         lower_bin_id: i32,
         width: i32,
     ) -> Result<()> {
@@ -58,8 +61,8 @@ pub mod cpi_example {
     }
 
     // NOTE: Position and position's owner will be PDA
-    pub fn initialize_pda_position_with_pda_owner(
-        ctx: Context<InitializePdaPositionWithPdaOwner>,
+    pub fn initialize_dlmm_pda_position_with_pda_owner(
+        ctx: Context<InitializeDlmmPdaPositionWithPdaOwner>,
         index: i64,
         lower_bin_id: i32,
         width: i32,
@@ -69,6 +72,72 @@ pub mod cpi_example {
             index,
             lower_bin_id,
             width,
+        )
+    }
+
+    pub fn initialize_dlmm_pda_position(
+        ctx: Context<InitializeDlmmPdaPosition>,
+        position_index: i64,
+        lower_bin_id: i32,
+        width: i32,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::handle_initialize_pda_position(
+            ctx,
+            position_index,
+            lower_bin_id,
+            width,
+        )
+    }
+
+    pub fn dlmm_deposit<'a, 'b, 'c, 'info>(
+        ctx: Context<'a, 'b, 'c, 'info, DlmmDeposit<'info>>,
+        liquidity_parameter: LiquidityParameterByStrategy,
+        remaining_account_info: RemainingAccountsInfo,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::dlmm_deposit::handle_deposit(
+            ctx,
+            liquidity_parameter,
+            remaining_account_info,
+        )
+    }
+
+    pub fn dlmm_deposit_to_position_pda<'a, 'b, 'c, 'info>(
+        ctx: Context<'a, 'b, 'c, 'info, DlmmDepositToPositionPda<'info>>,
+        position_index: i64,
+        liquidity_parameter: LiquidityParameterByStrategy,
+        remaining_account_info: RemainingAccountsInfo,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::dlmm_deposit::handle_deposit_to_position_pda(
+            ctx,
+            position_index,
+            liquidity_parameter,
+            remaining_account_info,
+        )
+    }
+
+    pub fn dlmm_deposit_to_position_with_pda_authority<'a, 'b, 'c, 'info>(
+        ctx: Context<'a, 'b, 'c, 'info, DlmmDepositToPositionWithPdaAuthority<'info>>,
+        liquidity_parameter: LiquidityParameterByStrategy,
+        remaining_account_info: RemainingAccountsInfo,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::dlmm_deposit::handle_deposit_with_pda_authority(
+            ctx,
+            liquidity_parameter,
+            remaining_account_info,
+        )
+    }
+
+    pub fn dlmm_deposit_to_pda_position_with_pda_authority<'a, 'b, 'c, 'info>(
+        ctx: Context<'a, 'b, 'c, 'info, DlmmDepositToPdaPositionWithPdaAuthority<'info>>,
+        position_index: i64,
+        liquidity_parameter: LiquidityParameterByStrategy,
+        remaining_account_info: RemainingAccountsInfo,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::dlmm_deposit::handle_deposit_to_pda_position_with_pda_authority(
+            ctx,
+            position_index,
+            liquidity_parameter,
+            remaining_account_info,
         )
     }
 
