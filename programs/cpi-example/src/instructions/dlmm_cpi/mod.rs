@@ -16,3 +16,8 @@ pub mod dlmm_deposit {
 }
 
 mod utils;
+
+mod withdraw;
+pub mod dlmm_withdraw {
+    pub use super::withdraw::*;
+}
