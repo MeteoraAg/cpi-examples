@@ -21,3 +21,18 @@ mod withdraw;
 pub mod dlmm_withdraw {
     pub use super::withdraw::*;
 }
+
+mod claim_fee;
+pub mod dlmm_claim_fee {
+    pub use super::claim_fee::*;
+}
+
+mod claim_reward;
+pub mod dlmm_claim_reward {
+    pub use super::claim_reward::*;
+}
+
+mod get_position_info;
+pub mod dlmm_get_position_info {
+    pub use super::get_position_info::*;
+}

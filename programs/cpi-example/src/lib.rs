@@ -142,6 +142,18 @@ pub mod cpi_example {
         )
     }
 
+    pub fn dlmm_init_and_deposit_single_sided<'a, 'b, 'c, 'info>(
+        ctx: Context<'a, 'b, 'c, 'info, DlmmInitAndDepositSingleSide<'info>>,
+        args: InitAndDepositSingleSideArgs,
+        remaining_account_info: RemainingAccountsInfo,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::dlmm_deposit::handle_init_and_deposit_single_side(
+            ctx,
+            args,
+            remaining_account_info,
+        )
+    }
+
     pub fn dlmm_withdraw<'a, 'b, 'c, 'info>(
         ctx: Context<'a, 'b, 'c, 'info, DlmmRemoveLiquidity<'info>>,
         bin_liquidity_removal: Vec<BinLiquidityReduction>,

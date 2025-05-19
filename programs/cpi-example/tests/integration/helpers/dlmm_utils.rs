@@ -226,19 +226,23 @@ pub async fn create_new_lb_pair(
     lb_pair_key
 }
 
-pub async fn create_position_required_bin_arrays(
+pub async fn create_bin_arrays_by_bin_range(
     banks_client: &mut BanksClient,
-    position_state: &PositionV2,
+    lower_bin_id: i32,
+    upper_bin_id: i32,
     lb_pair_address: Pubkey,
     mock_user: &Keypair,
 ) -> Vec<Pubkey> {
-    let bin_array_lower_index = bin_id_to_bin_array_index(position_state.lower_bin_id).unwrap();
-    let bin_array_upper_index = bin_array_lower_index + 1;
+    let lower_bin_array_index = bin_id_to_bin_array_index(lower_bin_id).unwrap();
+    let upper_bin_array_index = bin_id_to_bin_array_index(upper_bin_id)
+        .unwrap()
+        .max(lower_bin_array_index + 1);
 
     let mut bin_array_addresses = vec![];
 
-    for ba_idx in bin_array_lower_index..=bin_array_upper_index {
-        let (bin_array_address, _bump) = derive_bin_array_pda(lb_pair_address, ba_idx.into());
+    for bin_array_index in lower_bin_array_index..=upper_bin_array_index {
+        let (bin_array_address, _bump) =
+            derive_bin_array_pda(lb_pair_address, bin_array_index.into());
 
         let accounts = dlmm::client::accounts::InitializeBinArray {
             lb_pair: lb_pair_address,
@@ -249,7 +253,7 @@ pub async fn create_position_required_bin_arrays(
         .to_account_metas(None);
 
         let ix_data = dlmm::client::args::InitializeBinArray {
-            index: ba_idx.into(),
+            index: bin_array_index.into(),
         }
         .data();
 
@@ -272,6 +276,24 @@ pub async fn create_position_required_bin_arrays(
 
         bin_array_addresses.push(bin_array_address);
     }
+
+    bin_array_addresses
+}
+
+pub async fn create_position_required_bin_arrays(
+    banks_client: &mut BanksClient,
+    position_state: &PositionV2,
+    lb_pair_address: Pubkey,
+    mock_user: &Keypair,
+) -> Vec<Pubkey> {
+    let bin_array_addresses = create_bin_arrays_by_bin_range(
+        banks_client,
+        position_state.lower_bin_id,
+        position_state.upper_bin_id,
+        lb_pair_address,
+        mock_user,
+    )
+    .await;
 
     bin_array_addresses
 }
