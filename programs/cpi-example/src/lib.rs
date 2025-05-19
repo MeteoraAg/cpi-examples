@@ -16,6 +16,7 @@ use crate::dlmm::types::*;
 
 use crate::dlmm_deposit::*;
 use crate::dlmm_swap::*;
+use crate::dlmm_withdraw::*;
 use crate::dynamic_amm_swap::*;
 
 fn assert_eq_admin(_key: Pubkey) -> bool {
@@ -138,6 +139,30 @@ pub mod cpi_example {
             position_index,
             liquidity_parameter,
             remaining_account_info,
+        )
+    }
+
+    pub fn dlmm_withdraw<'a, 'b, 'c, 'info>(
+        ctx: Context<'a, 'b, 'c, 'info, DlmmRemoveLiquidity<'info>>,
+        bin_liquidity_removal: Vec<BinLiquidityReduction>,
+        remaining_accounts_info: RemainingAccountsInfo,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::dlmm_withdraw::handle_withdraw(
+            ctx,
+            bin_liquidity_removal,
+            remaining_accounts_info,
+        )
+    }
+
+    pub fn dlmm_withdraw_with_pda_authority<'a, 'b, 'c, 'info>(
+        ctx: Context<'a, 'b, 'c, 'info, DlmmRemoveLiquidityWithPdaAuthority<'info>>,
+        bin_liquidity_removal: Vec<BinLiquidityReduction>,
+        remaining_accounts_info: RemainingAccountsInfo,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::dlmm_withdraw::handle_withdraw_with_pda_authority(
+            ctx,
+            bin_liquidity_removal,
+            remaining_accounts_info,
         )
     }
 

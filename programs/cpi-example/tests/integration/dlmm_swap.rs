@@ -1,4 +1,5 @@
 use crate::helpers;
+use crate::USDC_USDT_POOL;
 use anchor_lang::{solana_program::pubkey::Pubkey, InstructionData, ToAccountMetas};
 use anchor_spl::token::spl_token::instruction::transfer;
 use cpi_example::dlmm;
@@ -13,8 +14,6 @@ use solana_sdk::{
 };
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
-
-const USDC_USDT_POOL: Pubkey = solana_sdk::pubkey!("ARwi1S4DaiTG5DX7S4M4ZsrXqpMD1MrTmbu9ue2tpmEq");
 
 #[tokio::test]
 async fn test_dlmm_swap() {

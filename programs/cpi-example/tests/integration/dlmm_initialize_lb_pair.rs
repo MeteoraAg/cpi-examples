@@ -1,5 +1,8 @@
 use crate::helpers;
+use crate::PRESET_PARAMETER_2_BIN_STEP_1;
+use crate::USDT;
 use anchor_lang::{solana_program::pubkey::Pubkey, InstructionData, ToAccountMetas};
+use anchor_spl::mint::USDC;
 use cpi_example::dlmm;
 use cpi_example::dlmm::types::InitializeLbPair2Params;
 use helpers::dlmm_pda::*;
@@ -8,12 +11,6 @@ use helpers::{process_and_assert_ok, setup_cpi_example_program};
 use solana_program_test::*;
 use solana_sdk::system_program;
 use solana_sdk::{instruction::Instruction, signature::Keypair, signer::Signer};
-
-const PRESET_PARAMETER_2_BIN_STEP_1: Pubkey =
-    solana_sdk::pubkey!("BB2atM1VveWJJUERbufE73fzZAss74J6DcEx1jGdTvwg");
-
-const USDC: Pubkey = solana_sdk::pubkey!("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
-const USDT: Pubkey = solana_sdk::pubkey!("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
 
 #[tokio::test]
 async fn test_dlmm_initialize_lb_pair() {

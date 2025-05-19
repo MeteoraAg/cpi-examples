@@ -4,9 +4,11 @@ use crate::dlmm::{
     types::{BinLiquidityReduction, RemainingAccountsInfo},
 };
 use anchor_lang::prelude::*;
+use anchor_spl::associated_token::AssociatedToken;
+use anchor_spl::token_interface::{TokenAccount, TokenInterface};
 
 #[derive(Accounts)]
-pub struct RemoveLiquidity<'info> {
+pub struct DlmmRemoveLiquidity<'info> {
     /// CHECK: Position account
     #[account(mut)]
     pub position: UncheckedAccount<'info>,
@@ -60,14 +62,14 @@ pub struct RemoveLiquidity<'info> {
     // Transfer hook and bin arrays in remaining accounts
 }
 
-pub fn handle_withdraw(
-    ctx: Context<RemoveLiquidity>,
+pub fn handle_withdraw<'a, 'b, 'c, 'info>(
+    ctx: Context<'a, 'b, 'c, 'info, DlmmRemoveLiquidity<'info>>,
     bin_liquidity_removal: Vec<BinLiquidityReduction>,
     remaining_accounts_info: RemainingAccountsInfo,
 ) -> Result<()> {
     let accounts = dlmm::cpi::accounts::RemoveLiquidity2 {
         position: ctx.accounts.position.to_account_info(),
-        lb_pair: ctx.accounts.position.to_account_info(),
+        lb_pair: ctx.accounts.lb_pair.to_account_info(),
         bin_array_bitmap_extension: ctx
             .accounts
             .bin_array_bitmap_extension
@@ -87,12 +89,13 @@ pub fn handle_withdraw(
         program: ctx.accounts.dlmm_program.to_account_info(),
     };
 
-    let cpi_context = CpiContext::new(ctx.accounts.dlmm_program.to_account_info(), accounts);
+    let cpi_context = CpiContext::new(ctx.accounts.dlmm_program.to_account_info(), accounts)
+        .with_remaining_accounts(ctx.remaining_accounts.to_vec());
     dlmm::cpi::remove_liquidity2(cpi_context, bin_liquidity_removal, remaining_accounts_info)
 }
 
 #[derive(Accounts)]
-pub struct RemoveLiquidityWithPdaAuthority<'info> {
+pub struct DlmmRemoveLiquidityWithPdaAuthority<'info> {
     /// CHECK: Position account
     #[account(mut)]
     pub position: UncheckedAccount<'info>,
@@ -106,12 +109,22 @@ pub struct RemoveLiquidityWithPdaAuthority<'info> {
     pub bin_array_bitmap_extension: Option<UncheckedAccount<'info>>,
 
     /// CHECK: Authority token X account
-    #[account(mut)]
-    pub authority_token_x: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        associated_token::mint = token_x_mint,
+        associated_token::authority = authority,
+        associated_token::token_program = token_x_program,
+    )]
+    pub authority_token_x: Box<InterfaceAccount<'info, TokenAccount>>,
 
     /// CHECK: Authority token Y account
-    #[account(mut)]
-    pub authority_token_y: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        associated_token::mint = token_y_mint,
+        associated_token::authority = authority,
+        associated_token::token_program = token_y_program,
+    )]
+    pub authority_token_y: Box<InterfaceAccount<'info, TokenAccount>>,
 
     /// CHECK: Reserve x account
     #[account(mut)]
@@ -128,10 +141,10 @@ pub struct RemoveLiquidityWithPdaAuthority<'info> {
     pub token_y_mint: UncheckedAccount<'info>,
 
     /// CHECK: Token x program
-    pub token_x_program: UncheckedAccount<'info>,
+    pub token_x_program: Interface<'info, TokenInterface>,
 
     /// CHECK: Token y program
-    pub token_y_program: UncheckedAccount<'info>,
+    pub token_y_program: Interface<'info, TokenInterface>,
 
     /// CHECK: Memo program
     pub memo_program: UncheckedAccount<'info>,
@@ -153,17 +166,19 @@ pub struct RemoveLiquidityWithPdaAuthority<'info> {
         constraint = assert_eq_admin(admin.key())
     )]
     pub admin: Signer<'info>,
+
+    pub associated_token_program: Program<'info, AssociatedToken>,
     // Transfer hook and bin arrays in remaining accounts
 }
 
-pub fn handle_withdraw_position_with_pda_authority(
-    ctx: Context<RemoveLiquidityWithPdaAuthority>,
+pub fn handle_withdraw_with_pda_authority<'a, 'b, 'c, 'info>(
+    ctx: Context<'a, 'b, 'c, 'info, DlmmRemoveLiquidityWithPdaAuthority<'info>>,
     bin_liquidity_removal: Vec<BinLiquidityReduction>,
     remaining_accounts_info: RemainingAccountsInfo,
 ) -> Result<()> {
     let accounts = dlmm::cpi::accounts::RemoveLiquidity2 {
         position: ctx.accounts.position.to_account_info(),
-        lb_pair: ctx.accounts.position.to_account_info(),
+        lb_pair: ctx.accounts.lb_pair.to_account_info(),
         bin_array_bitmap_extension: ctx
             .accounts
             .bin_array_bitmap_extension
@@ -186,5 +201,12 @@ pub fn handle_withdraw_position_with_pda_authority(
     let seeds = &[b"authority".as_ref(), &[ctx.bumps.authority]];
     let signer_seeds = &[&seeds[..]];
 
-    dlmm::
+    let cpi_ctx = CpiContext::new_with_signer(
+        ctx.accounts.dlmm_program.to_account_info(),
+        accounts,
+        signer_seeds,
+    )
+    .with_remaining_accounts(ctx.remaining_accounts.to_vec());
+
+    dlmm::cpi::remove_liquidity2(cpi_ctx, bin_liquidity_removal, remaining_accounts_info)
 }

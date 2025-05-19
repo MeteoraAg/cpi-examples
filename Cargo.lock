@@ -1059,6 +1059,7 @@ dependencies = [
  "solana-program-test",
  "solana-sdk",
  "spl-associated-token-account 6.0.0",
+ "spl-memo 6.0.0",
 ]
 
 [[package]]
