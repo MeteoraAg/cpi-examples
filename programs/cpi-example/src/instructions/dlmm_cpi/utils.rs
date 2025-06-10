@@ -1,6 +1,8 @@
 use anchor_lang::{prelude::*, system_program::Transfer};
 use anchor_spl::token::TokenAccount;
 
+use crate::dlmm::constants::MAX_BIN_PER_ARRAY;
+
 const LB_PAIR_SIZE: usize = 904;
 const ORACLE_SIZE: usize = 3232;
 
@@ -37,4 +39,16 @@ pub fn fund_creator_authority<'info>(
     )?;
 
     Ok(())
+}
+
+// Reference: https://github.com/MeteoraAg/dlmm-sdk/blob/9c4aeacf7ffabbbc68df0db7f2ed981847b12cfb/commons/src/extensions/bin_array.rs#L62
+pub fn bin_id_to_bin_array_index(bin_id: i32) -> Option<i32> {
+    let idx = bin_id.checked_div(MAX_BIN_PER_ARRAY as i32)?;
+    let rem = bin_id.checked_rem(MAX_BIN_PER_ARRAY as i32)?;
+
+    if bin_id.is_negative() && rem != 0 {
+        idx.checked_sub(1)
+    } else {
+        Some(idx)
+    }
 }

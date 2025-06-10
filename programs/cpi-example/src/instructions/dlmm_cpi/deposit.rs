@@ -15,6 +15,7 @@ use crate::{
             LiquidityParameterByStrategy, RemainingAccountsInfo, StrategyParameters, StrategyType,
         },
     },
+    types::Side,
     utils::deserialize_zc_account_workaround,
 };
 
@@ -681,14 +682,10 @@ pub struct InitAndDepositSingleSideArgs {
 
 impl InitAndDepositSingleSideArgs {
     pub fn validate(&self) -> Result<()> {
-        assert!(self.side == 0 || self.side == 1, "Invalid side");
+        Side::from_u8(self.side)?;
         assert!(self.amount > 0, "Invalid amount");
 
         Ok(())
-    }
-
-    pub fn deposit_bid_side(&self) -> bool {
-        self.side == 1
     }
 }
 
@@ -722,32 +719,35 @@ pub fn handle_init_and_deposit_single_side<'a, 'b, 'c, 'info>(
         ..
     } = args;
 
-    let deposit_bid_side = args.deposit_bid_side();
+    let deposit_side = Side::from_u8(args.side)?;
 
-    let (min_bin_id, max_bin_id, amount_x, amount_y) = if deposit_bid_side {
-        let max_bin_id = lb_pair_state.active_id.checked_sub(1).unwrap();
-        let min_bin_id = max_bin_id
-            .checked_sub(DEFAULT_BIN_PER_POSITION as i32)
-            .unwrap()
-            .checked_add(1)
-            .unwrap();
+    let (min_bin_id, max_bin_id, amount_x, amount_y) = match deposit_side {
+        Side::Bid => {
+            let max_bin_id = lb_pair_state.active_id.checked_sub(1).unwrap();
+            let min_bin_id = max_bin_id
+                .checked_sub(DEFAULT_BIN_PER_POSITION as i32)
+                .unwrap()
+                .checked_add(1)
+                .unwrap();
 
-        let amount_x = 0;
-        let amount_y = amount;
+            let amount_x = 0;
+            let amount_y = amount;
 
-        (min_bin_id, max_bin_id, amount_x, amount_y)
-    } else {
-        let min_bin_id = lb_pair_state.active_id.checked_add(1).unwrap();
-        let max_bin_id = min_bin_id
-            .checked_add(DEFAULT_BIN_PER_POSITION as i32)
-            .unwrap()
-            .checked_sub(1)
-            .unwrap();
+            (min_bin_id, max_bin_id, amount_x, amount_y)
+        }
+        Side::Ask => {
+            let min_bin_id = lb_pair_state.active_id.checked_add(1).unwrap();
+            let max_bin_id = min_bin_id
+                .checked_add(DEFAULT_BIN_PER_POSITION as i32)
+                .unwrap()
+                .checked_sub(1)
+                .unwrap();
 
-        let amount_x = amount;
-        let amount_y = 0;
+            let amount_x = amount;
+            let amount_y = 0;
 
-        (min_bin_id, max_bin_id, amount_x, amount_y)
+            (min_bin_id, max_bin_id, amount_x, amount_y)
+        }
     };
 
     let seeds = &[b"authority".as_ref(), &[ctx.bumps.authority]];

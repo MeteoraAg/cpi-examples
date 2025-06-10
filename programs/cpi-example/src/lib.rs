@@ -5,6 +5,7 @@ use anchor_lang::prelude::*;
 pub mod instructions;
 pub use instructions::*;
 
+mod types;
 mod utils;
 
 declare_program!(dlmm);
@@ -174,6 +175,18 @@ pub mod cpi_example {
         instructions::dlmm_cpi::dlmm_withdraw::handle_withdraw_with_pda_authority(
             ctx,
             bin_liquidity_removal,
+            remaining_accounts_info,
+        )
+    }
+
+    pub fn dlmm_withdraw_single_sided<'a, 'b, 'c: 'info, 'info>(
+        ctx: Context<'a, 'b, 'c, 'info, DlmmRemoveLiquiditySingleSided<'info>>,
+        args: RemoveSingleSidedArgs,
+        remaining_accounts_info: RemainingAccountsInfo,
+    ) -> Result<()> {
+        instructions::dlmm_cpi::dlmm_withdraw::handle_withdraw_single_sided(
+            ctx,
+            args,
             remaining_accounts_info,
         )
     }
