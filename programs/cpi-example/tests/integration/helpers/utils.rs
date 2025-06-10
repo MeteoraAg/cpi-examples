@@ -1,5 +1,7 @@
-use anchor_lang::solana_program::instruction::Instruction;
+use anchor_lang::prelude::Result;
 use anchor_lang::solana_program::program_pack::Pack;
+use anchor_lang::{solana_program::instruction::Instruction, AccountDeserialize};
+use anchor_lang::{Owner, ZeroCopy};
 use assert_matches::assert_matches;
 use solana_program_test::{BanksClient, ProgramTest};
 use solana_sdk::{
@@ -48,4 +50,28 @@ pub fn add_packable_account<T: Pack>(
             ..Default::default()
         },
     );
+}
+
+pub fn deserialize_zc_unalignment<T: AccountDeserialize + ZeroCopy + Owner>(
+    account: &Account,
+) -> Result<T> {
+    if account.owner != T::owner() {
+        return Err(anchor_lang::prelude::Error::from(
+            anchor_lang::prelude::ErrorCode::AccountOwnedByWrongProgram,
+        )
+        .with_pubkeys((account.owner, T::owner())));
+    }
+
+    let data = &account.data[..];
+    let disc = T::DISCRIMINATOR;
+    if data.len() < disc.len() {
+        return Err(anchor_lang::prelude::ErrorCode::AccountDiscriminatorNotFound.into());
+    }
+
+    let given_disc = &data[..disc.len()];
+    if given_disc != disc {
+        return Err(anchor_lang::prelude::ErrorCode::AccountDiscriminatorMismatch.into());
+    }
+
+    Ok(bytemuck::pod_read_unaligned(&data[disc.len()..]))
 }
