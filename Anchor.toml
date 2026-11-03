@@ -15,3 +15,4 @@ wallet = "~/.config/solana/id.json"
 [toolchain]
 anchor_version = "0.31.0"
 solana_version = "2.1.0"
+package_manager = "pnpm"

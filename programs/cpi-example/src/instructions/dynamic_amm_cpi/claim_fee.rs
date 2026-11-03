@@ -86,7 +86,6 @@ pub struct DynamicAmmClaimFee<'info> {
 /// # Returns
 ///
 /// Returns a `Result` indicating success or failure.
-
 pub fn handle_claim_fee(ctx: Context<DynamicAmmClaimFee>) -> Result<()> {
     let accounts = dynamic_amm::cpi::accounts::ClaimFee {
         pool: ctx.accounts.pool.to_account_info(),

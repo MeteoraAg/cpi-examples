@@ -23,8 +23,8 @@ declare_id!("4JTNRRQpgLusbEhGnzTuE9kgPgMLXQX1wqBzU52GduqH");
 pub mod cpi_example {
     use super::*;
 
-    pub fn dlmm_swap<'a, 'b, 'c, 'info>(
-        ctx: Context<'a, 'b, 'c, 'info, DlmmSwap<'info>>,
+    pub fn dlmm_swap<'info>(
+        ctx: Context<'_, '_, '_, 'info, DlmmSwap<'info>>,
         amount_in: u64,
         min_amount_out: u64,
     ) -> Result<()> {
