@@ -373,10 +373,10 @@ pub struct FundCreatorAuthorityAccounts<'b, 'info> {
     pub creator_authority: &'b AccountInfo<'info>,
 }
 
-pub fn fund_creator_authority<'b, 'info>(
+pub fn fund_creator_authority(
     token_a_amount: u64,
     token_b_amount: u64,
-    accounts: FundCreatorAuthorityAccounts<'b, 'info>,
+    accounts: FundCreatorAuthorityAccounts<'_, '_>,
 ) -> Result<()> {
     let FundCreatorAuthorityAccounts {
         creator_token_a,

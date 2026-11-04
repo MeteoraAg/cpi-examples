@@ -65,8 +65,8 @@ pub struct DlmmSwap<'info> {
 /// # Returns
 ///
 /// Returns a `Result` indicating success or failure.
-pub fn handle_dlmm_swap<'a, 'b, 'c, 'info>(
-    ctx: Context<'a, 'b, 'c, 'info, DlmmSwap<'info>>,
+pub fn handle_dlmm_swap<'info>(
+    ctx: Context<'_, '_, '_, 'info, DlmmSwap<'info>>,
     amount_in: u64,
     min_amount_out: u64,
 ) -> Result<()> {

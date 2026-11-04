@@ -92,7 +92,7 @@ pub fn derive_position_pda(
 ) -> (Pubkey, u8) {
     Pubkey::find_program_address(
         &[
-            POSITION.as_ref(),
+            POSITION,
             lb_pair.as_ref(),
             base.as_ref(),
             lower_bin_id.to_le_bytes().as_ref(),
