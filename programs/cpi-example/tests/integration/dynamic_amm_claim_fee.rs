@@ -80,7 +80,7 @@ async fn generate_swap_fees(banks_client: &mut BanksClient, pool: Pubkey, user: 
             data: ix_data,
         };
 
-        process_and_assert_ok(&[instruction], user, &[&user], banks_client).await;
+        process_and_assert_ok(&[instruction], user, &[user], banks_client).await;
     }
 }
 
@@ -456,7 +456,7 @@ async fn test_claim_fee() {
         process_and_assert_ok(
             &[init_user_token_a_ix, init_user_token_b_ix, instruction],
             &mock_user,
-            &[&mock_user, &user],
+            &[&mock_user, user],
             &mut banks_client,
         )
         .await;
